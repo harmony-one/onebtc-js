@@ -1,0 +1,1129 @@
+export const OneBtc: any = {
+  contractName: "OneBtc",
+  abi: [
+    {
+      inputs: [
+        {
+          internalType: "contract IRelay",
+          name: "_relay",
+          type: "address",
+        },
+      ],
+      stateMutability: "nonpayable",
+      type: "constructor",
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: true,
+          internalType: "address",
+          name: "owner",
+          type: "address",
+        },
+        {
+          indexed: true,
+          internalType: "address",
+          name: "spender",
+          type: "address",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "value",
+          type: "uint256",
+        },
+      ],
+      name: "Approval",
+      type: "event",
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: true,
+          internalType: "uint256",
+          name: "issude_id",
+          type: "uint256",
+        },
+        {
+          indexed: true,
+          internalType: "address",
+          name: "requester",
+          type: "address",
+        },
+        {
+          indexed: true,
+          internalType: "address",
+          name: "vault_id",
+          type: "address",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "amount",
+          type: "uint256",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "fee",
+          type: "uint256",
+        },
+        {
+          indexed: false,
+          internalType: "address",
+          name: "btc_address",
+          type: "address",
+        },
+      ],
+      name: "IssueCancel",
+      type: "event",
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: true,
+          internalType: "uint256",
+          name: "issude_id",
+          type: "uint256",
+        },
+        {
+          indexed: true,
+          internalType: "address",
+          name: "requester",
+          type: "address",
+        },
+        {
+          indexed: true,
+          internalType: "address",
+          name: "vault_id",
+          type: "address",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "amount",
+          type: "uint256",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "fee",
+          type: "uint256",
+        },
+        {
+          indexed: false,
+          internalType: "address",
+          name: "btc_address",
+          type: "address",
+        },
+      ],
+      name: "IssueComplete",
+      type: "event",
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: true,
+          internalType: "uint256",
+          name: "issue_id",
+          type: "uint256",
+        },
+        {
+          indexed: true,
+          internalType: "address",
+          name: "requester",
+          type: "address",
+        },
+        {
+          indexed: true,
+          internalType: "address",
+          name: "vault_id",
+          type: "address",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "amount",
+          type: "uint256",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "fee",
+          type: "uint256",
+        },
+        {
+          indexed: false,
+          internalType: "address",
+          name: "btc_address",
+          type: "address",
+        },
+      ],
+      name: "IssueRequest",
+      type: "event",
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: false,
+          internalType: "address",
+          name: "sender",
+          type: "address",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "amount",
+          type: "uint256",
+        },
+      ],
+      name: "LockCollateral",
+      type: "event",
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: true,
+          internalType: "uint256",
+          name: "redeem_id",
+          type: "uint256",
+        },
+        {
+          indexed: true,
+          internalType: "address",
+          name: "requester",
+          type: "address",
+        },
+        {
+          indexed: true,
+          internalType: "address",
+          name: "vault_id",
+          type: "address",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "amount",
+          type: "uint256",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "fee",
+          type: "uint256",
+        },
+        {
+          indexed: false,
+          internalType: "address",
+          name: "btc_address",
+          type: "address",
+        },
+      ],
+      name: "RedeemCancel",
+      type: "event",
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: true,
+          internalType: "uint256",
+          name: "redeem_id",
+          type: "uint256",
+        },
+        {
+          indexed: true,
+          internalType: "address",
+          name: "requester",
+          type: "address",
+        },
+        {
+          indexed: true,
+          internalType: "address",
+          name: "vault_id",
+          type: "address",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "amount",
+          type: "uint256",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "fee",
+          type: "uint256",
+        },
+        {
+          indexed: false,
+          internalType: "address",
+          name: "btc_address",
+          type: "address",
+        },
+      ],
+      name: "RedeemComplete",
+      type: "event",
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: true,
+          internalType: "uint256",
+          name: "redeem_id",
+          type: "uint256",
+        },
+        {
+          indexed: true,
+          internalType: "address",
+          name: "requester",
+          type: "address",
+        },
+        {
+          indexed: true,
+          internalType: "address",
+          name: "vault_id",
+          type: "address",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "amount",
+          type: "uint256",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "fee",
+          type: "uint256",
+        },
+        {
+          indexed: false,
+          internalType: "address",
+          name: "btc_address",
+          type: "address",
+        },
+      ],
+      name: "RedeemRequest",
+      type: "event",
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: true,
+          internalType: "address",
+          name: "vault_id",
+          type: "address",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "collateral",
+          type: "uint256",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "btc_public_key_x",
+          type: "uint256",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "btc_public_key_y",
+          type: "uint256",
+        },
+      ],
+      name: "RegisterVault",
+      type: "event",
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: false,
+          internalType: "address",
+          name: "sender",
+          type: "address",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "amount",
+          type: "uint256",
+        },
+      ],
+      name: "ReleaseCollateral",
+      type: "event",
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: false,
+          internalType: "address",
+          name: "sender",
+          type: "address",
+        },
+        {
+          indexed: false,
+          internalType: "address",
+          name: "receiver",
+          type: "address",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "amount",
+          type: "uint256",
+        },
+      ],
+      name: "SlashCollateral",
+      type: "event",
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: true,
+          internalType: "address",
+          name: "from",
+          type: "address",
+        },
+        {
+          indexed: true,
+          internalType: "address",
+          name: "to",
+          type: "address",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "value",
+          type: "uint256",
+        },
+      ],
+      name: "Transfer",
+      type: "event",
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: true,
+          internalType: "address",
+          name: "vault_id",
+          type: "address",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "x",
+          type: "uint256",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "y",
+          type: "uint256",
+        },
+      ],
+      name: "VaultPublicKeyUpdate",
+      type: "event",
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "",
+          type: "address",
+        },
+      ],
+      name: "CollateralBalances",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+      constant: true,
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "",
+          type: "address",
+        },
+      ],
+      name: "CollateralUsed",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+      constant: true,
+    },
+    {
+      inputs: [],
+      name: "TotalCollateral",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+      constant: true,
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "owner",
+          type: "address",
+        },
+        {
+          internalType: "address",
+          name: "spender",
+          type: "address",
+        },
+      ],
+      name: "allowance",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+      constant: true,
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "spender",
+          type: "address",
+        },
+        {
+          internalType: "uint256",
+          name: "amount",
+          type: "uint256",
+        },
+      ],
+      name: "approve",
+      outputs: [
+        {
+          internalType: "bool",
+          name: "",
+          type: "bool",
+        },
+      ],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "account",
+          type: "address",
+        },
+      ],
+      name: "balanceOf",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+      constant: true,
+    },
+    {
+      inputs: [],
+      name: "decimals",
+      outputs: [
+        {
+          internalType: "uint8",
+          name: "",
+          type: "uint8",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+      constant: true,
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "spender",
+          type: "address",
+        },
+        {
+          internalType: "uint256",
+          name: "subtractedValue",
+          type: "uint256",
+        },
+      ],
+      name: "decreaseAllowance",
+      outputs: [
+        {
+          internalType: "bool",
+          name: "",
+          type: "bool",
+        },
+      ],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "user",
+          type: "address",
+        },
+      ],
+      name: "get_issue_id",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+      constant: true,
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "spender",
+          type: "address",
+        },
+        {
+          internalType: "uint256",
+          name: "addedValue",
+          type: "uint256",
+        },
+      ],
+      name: "increaseAllowance",
+      outputs: [
+        {
+          internalType: "bool",
+          name: "",
+          type: "bool",
+        },
+      ],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "",
+          type: "address",
+        },
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      name: "issueRequests",
+      outputs: [
+        {
+          internalType: "address payable",
+          name: "vault",
+          type: "address",
+        },
+        {
+          internalType: "uint256",
+          name: "opentime",
+          type: "uint256",
+        },
+        {
+          internalType: "address payable",
+          name: "requester",
+          type: "address",
+        },
+        {
+          internalType: "address",
+          name: "btc_address",
+          type: "address",
+        },
+        {
+          internalType: "bytes",
+          name: "btc_public_key",
+          type: "bytes",
+        },
+        {
+          internalType: "uint256",
+          name: "amount",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "fee",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "griefing_collateral",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "period",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "btc_height",
+          type: "uint256",
+        },
+        {
+          internalType: "enum RequestStatus",
+          name: "status",
+          type: "uint8",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+      constant: true,
+    },
+    {
+      inputs: [],
+      name: "lock_additional_collateral",
+      outputs: [],
+      stateMutability: "payable",
+      type: "function",
+      payable: true,
+    },
+    {
+      inputs: [],
+      name: "name",
+      outputs: [
+        {
+          internalType: "string",
+          name: "",
+          type: "string",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+      constant: true,
+    },
+    {
+      inputs: [],
+      name: "realy",
+      outputs: [
+        {
+          internalType: "contract IRelay",
+          name: "",
+          type: "address",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+      constant: true,
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "",
+          type: "address",
+        },
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      name: "redeemRequests",
+      outputs: [
+        {
+          internalType: "address",
+          name: "vault",
+          type: "address",
+        },
+        {
+          internalType: "uint256",
+          name: "opentime",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "period",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "fee",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "amount_btc",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "amount_one",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "premium_one",
+          type: "uint256",
+        },
+        {
+          internalType: "address",
+          name: "requester",
+          type: "address",
+        },
+        {
+          internalType: "address",
+          name: "btc_address",
+          type: "address",
+        },
+        {
+          internalType: "uint256",
+          name: "btc_height",
+          type: "uint256",
+        },
+        {
+          internalType: "enum RequestStatus",
+          name: "status",
+          type: "uint8",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+      constant: true,
+    },
+    {
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "btc_public_key_x",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "btc_public_key_y",
+          type: "uint256",
+        },
+      ],
+      name: "register_vault",
+      outputs: [],
+      stateMutability: "payable",
+      type: "function",
+      payable: true,
+    },
+    {
+      inputs: [],
+      name: "symbol",
+      outputs: [
+        {
+          internalType: "string",
+          name: "",
+          type: "string",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+      constant: true,
+    },
+    {
+      inputs: [],
+      name: "totalSupply",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+      constant: true,
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "recipient",
+          type: "address",
+        },
+        {
+          internalType: "uint256",
+          name: "amount",
+          type: "uint256",
+        },
+      ],
+      name: "transfer",
+      outputs: [
+        {
+          internalType: "bool",
+          name: "",
+          type: "bool",
+        },
+      ],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "sender",
+          type: "address",
+        },
+        {
+          internalType: "address",
+          name: "recipient",
+          type: "address",
+        },
+        {
+          internalType: "uint256",
+          name: "amount",
+          type: "uint256",
+        },
+      ],
+      name: "transferFrom",
+      outputs: [
+        {
+          internalType: "bool",
+          name: "",
+          type: "bool",
+        },
+      ],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "btc_public_key_x",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "btc_public_key_y",
+          type: "uint256",
+        },
+      ],
+      name: "update_public_key",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "",
+          type: "address",
+        },
+      ],
+      name: "vaults",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "btc_public_key_x",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "btc_public_key_y",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "collateral",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+      constant: true,
+    },
+    {
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "amount",
+          type: "uint256",
+        },
+      ],
+      name: "withdraw_collateral",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "amount_requested",
+          type: "uint256",
+        },
+        {
+          internalType: "address",
+          name: "vault_id",
+          type: "address",
+        },
+      ],
+      name: "request_issue",
+      outputs: [],
+      stateMutability: "payable",
+      type: "function",
+      payable: true,
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "requester",
+          type: "address",
+        },
+        {
+          internalType: "uint256",
+          name: "issue_id",
+          type: "uint256",
+        },
+      ],
+      name: "execute_issue",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "requester",
+          type: "address",
+        },
+        {
+          internalType: "uint256",
+          name: "issue_id",
+          type: "uint256",
+        },
+      ],
+      name: "cancel_issue",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "amount_one_btc",
+          type: "uint256",
+        },
+        {
+          internalType: "address",
+          name: "btc_address",
+          type: "address",
+        },
+        {
+          internalType: "address",
+          name: "vault_id",
+          type: "address",
+        },
+      ],
+      name: "request_redeem",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "requester",
+          type: "address",
+        },
+        {
+          internalType: "uint256",
+          name: "redeem_id",
+          type: "uint256",
+        },
+        {
+          internalType: "bytes",
+          name: "merkle_proof",
+          type: "bytes",
+        },
+        {
+          internalType: "bytes",
+          name: "raw_tx",
+          type: "bytes",
+        },
+        {
+          internalType: "uint64",
+          name: "heightAndIndex",
+          type: "uint64",
+        },
+        {
+          internalType: "bytes",
+          name: "header",
+          type: "bytes",
+        },
+      ],
+      name: "execute_redeem",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "requester",
+          type: "address",
+        },
+        {
+          internalType: "uint256",
+          name: "redeem_id",
+          type: "uint256",
+        },
+      ],
+      name: "cancel_redeem",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+  ],
+};
