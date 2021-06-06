@@ -77,6 +77,10 @@ export class HmyMethodsWeb3 {
   executeIssue = async (
     requester: string,
     issue_id: number,
+    merkle_proof: any,
+    raw_tx: any,
+    heightAndIndex: any,
+    header: any,
     sendTxCallback?: (hash: string) => void
   ) => {
     let accounts;
@@ -91,8 +95,24 @@ export class HmyMethodsWeb3 {
       ? accounts[0]
       : this.web3.eth.defaultAccount;
 
+    console.log(
+      addressHex,
+      utils.toBN(issue_id),
+      merkle_proof,
+      raw_tx,
+      heightAndIndex,
+      header
+    );
+
     return await this.oneBTCContract.methods
-      .execute_issue(addressHex, utils.toBN(issue_id))
+      .execute_issue(
+        addressHex,
+        utils.toBN(issue_id),
+        merkle_proof,
+        raw_tx,
+        utils.toBN(heightAndIndex),
+        header
+      )
       .send({
         from: account,
         gasLimit: 6721900,
@@ -160,5 +180,60 @@ export class HmyMethodsWeb3 {
         gasLimit: 6721900,
         gasPrice: new BN(await this.web3.eth.getGasPrice()).mul(new BN(1)),
       });
+  };
+
+  getIssueDetails = async (txHash: string) => {
+    const receipt = await this.web3.eth.getTransactionReceipt(txHash);
+
+    let decoded: any;
+
+    receipt.logs.forEach(async (log: any) => {
+      try {
+        decoded = this.web3.eth.abi.decodeLog(
+          [
+            {
+              indexed: true,
+              internalType: "uint256",
+              name: "issue_id",
+              type: "uint256",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "requester",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "vault_id",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "fee",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "address",
+              name: "btc_address",
+              type: "address",
+            },
+          ],
+          log.data,
+          log.topics.slice(1)
+        );
+      } catch (e) {}
+    });
+
+    return decoded;
   };
 }

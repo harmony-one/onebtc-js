@@ -604,26 +604,6 @@ export const OneBtc: any = {
       inputs: [
         {
           internalType: "address",
-          name: "user",
-          type: "address",
-        },
-      ],
-      name: "get_issue_id",
-      outputs: [
-        {
-          internalType: "uint256",
-          name: "",
-          type: "uint256",
-        },
-      ],
-      stateMutability: "view",
-      type: "function",
-      constant: true,
-    },
-    {
-      inputs: [
-        {
-          internalType: "address",
           name: "spender",
           type: "address",
         },
@@ -1021,6 +1001,26 @@ export const OneBtc: any = {
           internalType: "uint256",
           name: "issue_id",
           type: "uint256",
+        },
+        {
+          internalType: "bytes",
+          name: "merkle_proof",
+          type: "bytes",
+        },
+        {
+          internalType: "bytes",
+          name: "raw_tx",
+          type: "bytes",
+        },
+        {
+          internalType: "uint64",
+          name: "heightAndIndex",
+          type: "uint64",
+        },
+        {
+          internalType: "bytes",
+          name: "header",
+          type: "bytes",
         },
       ],
       name: "execute_issue",

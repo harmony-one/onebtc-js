@@ -1,6 +1,8 @@
 require("dotenv").config();
 import { getHmyClient } from "./index";
-const utils = require('web3-utils');
+import { issue_tx_mock } from "./helpers";
+const utils = require("web3-utils");
+const bitcoin = require("bitcoinjs-lib");
 
 // const sleep = (sec: number) =>
 //   new Promise((resolve) => setTimeout(resolve, sec * 1000));
@@ -10,7 +12,7 @@ const testWeb3 = async () => {
     sdk: "web3",
     nodeURL: "https://api.s0.b.hmny.io",
     chainId: 2,
-    contractAddress: "0x4501f806c8a8f063A07A4Ad585ec275b14cd77cc",
+    contractAddress: "0x45b24bE9F317054B4D5972E9d685f6e403772f6b",
     gasLimit: 6721900,
   });
 
@@ -22,21 +24,59 @@ const testWeb3 = async () => {
 
   res = await hmyClient.methods.web3.eth.getBalance(myAddress);
 
-  console.log('User balance: ', Number(res) / 1e18);
+  console.log("User balance: ", Number(res) / 1e18);
 
-  res = await hmyClient.methods.requestIssue(utils.toBN("100000000000"), myAddress);
+  res = await hmyClient.methods.requestIssue(
+    utils.toBN("100000000000"),
+    myAddress
+  );
 
-  console.log('Request Issue tx: ', res.status);
+  console.log("Request Issue tx: ", res.status);
 
-  const issue_id = await hmyClient.methods.getIssueId(myAddress);
+  console.log(
+    "1BTC Balance before: ",
+    Number(await hmyClient.methods.balanceOf(myAddress)) / 1e18
+  );
 
-  console.log('1BTC Balance before: ', Number(await hmyClient.methods.balanceOf(myAddress)) / 1e18);
+  ///////
+  const IssueEvent = await hmyClient.methods.getIssueDetails(
+    res.transactionHash
+  );
 
-  res = await hmyClient.methods.executeIssue(myAddress, issue_id);
+  console.log("issueDetails: ", IssueEvent);
 
-  console.log('Execute issue tx: ', res.status);
+  console.log("start execute issue ----");
 
-  console.log('1BTC Balance after: ', Number(await hmyClient.methods.balanceOf(myAddress)) / 1e18);
+  /////////////////////////////////////////////
+  const issue_id = IssueEvent.issue_id;
+  const btc_address = IssueEvent.btc_address;
+  const btc_base58 = bitcoin.address.toBase58Check(
+    Buffer.from(btc_address.slice(2), "hex"),
+    0
+  );
+  const btcTx = issue_tx_mock(issue_id, btc_base58, Number("100000000000"));
+  const btcBlockNumberMock = 1000;
+  const btcTxIndexMock = 2;
+  const heightAndIndex = (btcBlockNumberMock << 32) | btcTxIndexMock;
+  const headerMock = Buffer.alloc(0);
+  const proofMock = Buffer.alloc(0);
+
+  await hmyClient.methods.executeIssue(
+    myAddress,
+    issue_id,
+    proofMock,
+    btcTx.toBuffer(),
+    heightAndIndex,
+    headerMock
+  );
+  ////////////////////////////////////////////////////////////
+
+  console.log("Execute issue tx: ", res.status);
+
+  console.log(
+    "1BTC Balance after: ",
+    Number(await hmyClient.methods.balanceOf(myAddress)) / 1e18
+  );
 
   process.exit();
 };
