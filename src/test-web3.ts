@@ -54,7 +54,7 @@ const testWeb3 = async () => {
     Buffer.from(btc_address.slice(2), "hex"),
     0
   );
-  const btcTx = issue_tx_mock(issue_id, btc_base58, Number("100000000000"));
+  const btcTx = issue_tx_mock(utils.toBN(issue_id), btc_base58, Number("100000000000"));
   const btcBlockNumberMock = 1000;
   const btcTxIndexMock = 2;
   const heightAndIndex = (btcBlockNumberMock << 32) | btcTxIndexMock;

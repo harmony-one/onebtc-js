@@ -95,15 +95,6 @@ export class HmyMethodsWeb3 {
       ? accounts[0]
       : this.web3.eth.defaultAccount;
 
-    console.log(
-      addressHex,
-      utils.toBN(issue_id),
-      merkle_proof,
-      raw_tx,
-      heightAndIndex,
-      header
-    );
-
     return await this.oneBTCContract.methods
       .execute_issue(
         addressHex,
