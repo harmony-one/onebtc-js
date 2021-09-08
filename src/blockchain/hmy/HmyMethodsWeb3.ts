@@ -64,12 +64,16 @@ export class HmyMethodsWeb3 {
       ? accounts[0]
       : this.web3.eth.defaultAccount;
 
+    console.log(addressHex, amount, account);
+
+    const GAS_PRICE = 10000000000;
+
     return await this.oneBTCContract.methods
-      .request_issue(utils.toBN(amount), addressHex)
+      .requestIssue(utils.toBN(amount), addressHex)
       .send({
         from: account,
-        gasLimit: 6721900,
-        gasPrice: new BN(await this.web3.eth.getGasPrice()).mul(new BN(1)),
+        gasLimit: 67219000,
+        gasPrice: GAS_PRICE,
         value: utils.toBN(amount),
       });
   };
@@ -96,7 +100,7 @@ export class HmyMethodsWeb3 {
       : this.web3.eth.defaultAccount;
 
     return await this.oneBTCContract.methods
-      .execute_issue(
+      .executeIssue(
         addressHex,
         utils.toBN(issue_id),
         merkle_proof,
@@ -129,7 +133,7 @@ export class HmyMethodsWeb3 {
       : this.web3.eth.defaultAccount;
 
     return await this.oneBTCContract.methods
-      .cancel_issue(addressHex, utils.toBN(issue_id))
+      .cancelIssue(addressHex, utils.toBN(issue_id))
       .send({
         from: account,
         gasLimit: 6721900,
@@ -140,7 +144,7 @@ export class HmyMethodsWeb3 {
   getIssueId = async (requester: string) => {
     const addressHex = getAddress(requester).checksum;
 
-    return await this.oneBTCContract.methods.get_issue_id(addressHex).call();
+    return await this.oneBTCContract.methods.getIssueId(addressHex).call();
   };
 
   balanceOf = async (requester: string) => {
@@ -165,7 +169,7 @@ export class HmyMethodsWeb3 {
       : this.web3.eth.defaultAccount;
 
     return await this.oneBTCContract.methods
-      .register_vault(utils.toBN(x), utils.toBN(y))
+      .registerVault(utils.toBN(x), utils.toBN(y))
       .send({
         from: account,
         gasLimit: 6721900,

@@ -12,7 +12,7 @@ const testWeb3 = async () => {
     sdk: "web3",
     nodeURL: "https://api.s0.b.hmny.io",
     chainId: 2,
-    contractAddress: "0x45b24bE9F317054B4D5972E9d685f6e403772f6b",
+    contractAddress: "0xBffa908aC951eD4fa224bd28f1291280E4220825",
     gasLimit: 6721900,
   });
 
@@ -54,7 +54,11 @@ const testWeb3 = async () => {
     Buffer.from(btc_address.slice(2), "hex"),
     0
   );
-  const btcTx = issue_tx_mock(utils.toBN(issue_id), btc_base58, Number("100000000000"));
+  const btcTx = issue_tx_mock(
+    utils.toBN(issue_id),
+    btc_base58,
+    Number("100000000000")
+  );
   const btcBlockNumberMock = 1000;
   const btcTxIndexMock = 2;
   const heightAndIndex = (btcBlockNumberMock << 32) | btcTxIndexMock;
