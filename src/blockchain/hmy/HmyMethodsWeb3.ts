@@ -147,6 +147,82 @@ export class HmyMethodsWeb3 {
     return await this.oneBTCContract.methods.getIssueId(addressHex).call();
   };
 
+
+  transfer = async (recipient: string, amount: number) => {
+    let accounts;
+    if (this.useMetamask) {
+      // @ts-ignore
+      accounts = await ethereum.enable();
+    }
+
+    const account = this.useMetamask
+      ? accounts[0]
+      : this.web3.eth.defaultAccount;
+
+    const amountBN = utils.toBN(amount);
+    return this.oneBTCContract.methods.transfer(recipient, amountBN).send({
+      from: account,
+      gasLimit: 6721900,
+      gasPrice: new BN(await this.web3.eth.getGasPrice()).mul(new BN(1)),
+    });
+  }
+
+  requestRedeem = async (amountOneBtc: number, btcAddress: string, vaultId: string) => {
+    let accounts;
+    if (this.useMetamask) {
+      // @ts-ignore
+      accounts = await ethereum.enable();
+    }
+
+    const _amountOneBtcBN = utils.toBN(amountOneBtc);
+
+    const account = this.useMetamask
+      ? accounts[0]
+      : this.web3.eth.defaultAccount;
+
+    return this.oneBTCContract.methods.requestRedeem(_amountOneBtcBN, btcAddress, vaultId).send({
+      from: account,
+      gasLimit: 6721900,
+      gasPrice: new BN(await this.web3.eth.getGasPrice()).mul(new BN(1)),
+    })
+  }
+
+  executeRedeem = async (
+    requester: string,
+    redeemId: number,
+    merkleProof: any,
+    rawTx: any,
+    heightAndIndex: any,
+    header: any,
+  ) => {
+    let accounts;
+    if (this.useMetamask) {
+      // @ts-ignore
+      accounts = await ethereum.enable();
+    }
+
+    const addressHex = getAddress(requester).checksum;
+
+    const account = this.useMetamask
+      ? accounts[0]
+      : this.web3.eth.defaultAccount;
+
+    return await this.oneBTCContract.methods
+      .executeRedeem(
+        addressHex,
+        utils.toBN(redeemId),
+        merkleProof,
+        rawTx,
+        utils.toBN(heightAndIndex),
+        header
+      )
+      .send({
+        from: account,
+        gasLimit: 6721900,
+        gasPrice: new BN(await this.web3.eth.getGasPrice()).mul(new BN(1)),
+      });
+  }
+
   balanceOf = async (requester: string) => {
     const addressHex = getAddress(requester).checksum;
 
@@ -231,4 +307,58 @@ export class HmyMethodsWeb3 {
 
     return decoded;
   };
+
+  getRedeemDetails = async (txHash: string) => {
+    const receipt = await this.web3.eth.getTransactionReceipt(txHash);
+
+    let decoded: any;
+
+    receipt.logs.forEach(async (log: any) => {
+      try {
+        decoded = this.web3.eth.abi.decodeLog(
+          [
+            {
+              indexed: true,
+              internalType: "uint256",
+              name: "redeem_id",
+              type: "uint256",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "requester",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "vault_id",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "fee",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "address",
+              name: "btc_address",
+              type: "address",
+            },
+          ],
+          log.data,
+          log.topics.slice(1)
+        );
+      } catch (e) {}
+    });
+
+    return decoded;
 }
