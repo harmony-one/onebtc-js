@@ -64,8 +64,6 @@ export class HmyMethodsWeb3 {
       ? accounts[0]
       : this.web3.eth.defaultAccount;
 
-    console.log(addressHex, amount, account);
-
     const GAS_PRICE = 10000000000;
 
     return await this.oneBTCContract.methods
@@ -75,7 +73,7 @@ export class HmyMethodsWeb3 {
         gasLimit: 67219000,
         gasPrice: GAS_PRICE,
         value: utils.toBN(amount),
-      });
+      }).on('transactionHash', sendTxCallback);
   };
 
   executeIssue = async (
@@ -112,7 +110,7 @@ export class HmyMethodsWeb3 {
         from: account,
         gasLimit: 6721900,
         gasPrice: new BN(await this.web3.eth.getGasPrice()).mul(new BN(1)),
-      });
+      }).on('transactionHash', sendTxCallback);
   };
 
   cancelIssue = async (
@@ -138,7 +136,7 @@ export class HmyMethodsWeb3 {
         from: account,
         gasLimit: 6721900,
         gasPrice: new BN(await this.web3.eth.getGasPrice()).mul(new BN(1)),
-      });
+      }).on('transactionHash', sendTxCallback);
   };
 
   getIssueId = async (requester: string) => {
@@ -148,7 +146,7 @@ export class HmyMethodsWeb3 {
   };
 
 
-  transfer = async (recipient: string, amount: number) => {
+  transfer = async (recipient: string, amount: number, sendTxCallback?: (hash: string) => void) => {
     let accounts;
     if (this.useMetamask) {
       // @ts-ignore
@@ -159,15 +157,17 @@ export class HmyMethodsWeb3 {
       ? accounts[0]
       : this.web3.eth.defaultAccount;
 
+    const addressHex = getAddress(recipient).checksum;
+
     const amountBN = utils.toBN(amount);
-    return this.oneBTCContract.methods.transfer(recipient, amountBN).send({
+    return this.oneBTCContract.methods.transfer(addressHex, amountBN).send({
       from: account,
       gasLimit: 6721900,
       gasPrice: new BN(await this.web3.eth.getGasPrice()).mul(new BN(1)),
-    });
+    }).on('transactionHash', sendTxCallback);
   }
 
-  requestRedeem = async (amountOneBtc: number, btcAddress: string, vaultId: string) => {
+  requestRedeem = async (amountOneBtc: number, btcAddress: string, vaultId: string, sendTxCallback?: (hash: string) => void) => {
     let accounts;
     if (this.useMetamask) {
       // @ts-ignore
@@ -176,15 +176,17 @@ export class HmyMethodsWeb3 {
 
     const _amountOneBtcBN = utils.toBN(amountOneBtc);
 
+    const addressHex = getAddress(vaultId).checksum;
+
     const account = this.useMetamask
       ? accounts[0]
       : this.web3.eth.defaultAccount;
 
-    return this.oneBTCContract.methods.requestRedeem(_amountOneBtcBN, btcAddress, vaultId).send({
+    return this.oneBTCContract.methods.requestRedeem(_amountOneBtcBN, btcAddress, addressHex).send({
       from: account,
       gasLimit: 6721900,
       gasPrice: new BN(await this.web3.eth.getGasPrice()).mul(new BN(1)),
-    })
+    }).on('transactionHash', sendTxCallback);
   }
 
   executeRedeem = async (
@@ -194,6 +196,7 @@ export class HmyMethodsWeb3 {
     rawTx: any,
     heightAndIndex: any,
     header: any,
+    sendTxCallback?: (hash: string) => void
   ) => {
     let accounts;
     if (this.useMetamask) {
@@ -220,7 +223,7 @@ export class HmyMethodsWeb3 {
         from: account,
         gasLimit: 6721900,
         gasPrice: new BN(await this.web3.eth.getGasPrice()).mul(new BN(1)),
-      });
+      }).on('transactionHash', sendTxCallback);
   }
 
   balanceOf = async (requester: string) => {
@@ -361,4 +364,5 @@ export class HmyMethodsWeb3 {
     });
 
     return decoded;
+  }
 }
