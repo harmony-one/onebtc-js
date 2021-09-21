@@ -1,11 +1,13 @@
 import Web3 from "web3";
-// import { HmyMethods } from "./HmyMethods";
-import { HmyMethodsWeb3 } from "./HmyMethodsWeb3";
 const { Harmony } = require("@harmony-js/core");
 const { ChainType } = require("@harmony-js/utils");
+import { HmyMethods } from "./HmyMethods";
+import { HmyMethodsWeb3 } from "./HmyMethodsWeb3";
+import IContractMethods from "./types";
+
 
 export interface IHmyClient {
-  methods: HmyMethodsWeb3;
+  methods: IContractMethods;
   addWallet: (pk: string) => void;
   getUserAddress: () => string;
   setUseOneWallet: (value: boolean) => void;
@@ -40,7 +42,7 @@ export const getHmyClient = async (
   // const hmyUserAccount = await hmy.wallet.createAccount();
 
   let userAddress: string;
-  let methods: HmyMethodsWeb3;
+  let methods: IContractMethods;
 
   let nodeURL = params.nodeURL;
 
@@ -61,13 +63,14 @@ export const getHmyClient = async (
 
     await methods.init();
   } else {
-    // methods = new HmyMethods({
-    //   hmy,
-    //   contractAddress: params.contractAddress,
-    //   nodeURL: params.nodeURL,
-    // });
-    //
-    // await methods.init();
+    methods = new HmyMethods({
+      hmy,
+      web3,
+      contractAddress: params.contractAddress,
+      nodeURL: params.nodeURL,
+    });
+
+    await methods.init();
   }
 
   return {

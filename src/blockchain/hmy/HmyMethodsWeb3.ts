@@ -1,11 +1,10 @@
 import Web3 from "web3";
 import { Contract } from "web3-eth-contract";
 import { getAddress } from "@harmony-js/crypto";
-import ENS from "@ensdomains/ensjs";
 import { OneBtc } from "../out/OneBtc";
-const BN = require("bn.js");
+import IContractMethods, {IssueDetails, RedeemDetails, SendTxCallback} from "./types";
+import {loadBlockByHeight, loadBtcTx, loadMerkleProof} from "./bitcoin";
 const utils = require("web3-utils");
-// const { hash } = require("eth-ens-namehash");
 
 interface IHmyMethodsInitParams {
   web3: Web3;
@@ -14,29 +13,26 @@ interface IHmyMethodsInitParams {
   options?: { gasPrice: number; gasLimit: number };
 }
 
-export class HmyMethodsWeb3 {
+export class HmyMethodsWeb3 implements IContractMethods {
   public web3: Web3;
-  public ens: typeof ENS;
 
-  public oneBTCContract: Contract;
+  public contract: Contract;
 
   public contractAddress: string;
-  public nodeURL: string;
-  // private options = { gasPrice: 1000000000, gasLimit: 6721900 };
+  private options = { gasPrice: 1000000000, gasLimit: 6721900 };
   public useMetamask = false;
 
   constructor(params: IHmyMethodsInitParams) {
     this.web3 = params.web3;
     this.contractAddress = params.contractAddress;
-    this.nodeURL = params.nodeURL;
 
-    // if (params.options) {
-    //   this.options = params.options;
-    // }
+    if (params.options) {
+      this.options = params.options;
+    }
   }
 
   init = async () => {
-    this.oneBTCContract = new this.web3.eth.Contract(
+    this.contract = new this.web3.eth.Contract(
       OneBtc.abi,
       this.contractAddress
     );
@@ -64,25 +60,20 @@ export class HmyMethodsWeb3 {
       ? accounts[0]
       : this.web3.eth.defaultAccount;
 
-    const GAS_PRICE = 10000000000;
-
-    return await this.oneBTCContract.methods
+    return await this.contract.methods
       .requestIssue(utils.toBN(amount), addressHex)
       .send({
         from: account,
-        gasLimit: 67219000,
-        gasPrice: GAS_PRICE,
+        gasLimit: this.options.gasLimit,
+        gasPrice: this.options.gasPrice,
         value: utils.toBN(amount),
       }).on('transactionHash', sendTxCallback);
   };
 
   executeIssue = async (
     requester: string,
-    issue_id: number,
-    merkle_proof: any,
-    raw_tx: any,
-    heightAndIndex: any,
-    header: any,
+    issue_id: string,
+    btcTxHash: string,
     sendTxCallback?: (hash: string) => void
   ) => {
     let accounts;
@@ -97,19 +88,25 @@ export class HmyMethodsWeb3 {
       ? accounts[0]
       : this.web3.eth.defaultAccount;
 
-    return await this.oneBTCContract.methods
+    const btcTx = await loadBtcTx(btcTxHash);
+    const { height, index, hash, hex } = btcTx;
+    const txBlock = await loadBlockByHeight(height);
+    const proof = await loadMerkleProof(hash, height);
+
+    return await this.contract.methods
       .executeIssue(
         addressHex,
         utils.toBN(issue_id),
-        merkle_proof,
-        raw_tx,
-        utils.toBN(heightAndIndex),
-        header
+        '0x' + proof,
+        Buffer.from(hex, 'hex'),
+        height,
+        index,
+        '0x' + txBlock.toHex(),
       )
       .send({
         from: account,
-        gasLimit: 6721900,
-        gasPrice: new BN(await this.web3.eth.getGasPrice()).mul(new BN(1)),
+        gasLimit: this.options.gasLimit,
+        gasPrice: this.options.gasPrice,
       }).on('transactionHash', sendTxCallback);
   };
 
@@ -130,19 +127,19 @@ export class HmyMethodsWeb3 {
       ? accounts[0]
       : this.web3.eth.defaultAccount;
 
-    return await this.oneBTCContract.methods
+    return await this.contract.methods
       .cancelIssue(addressHex, utils.toBN(issue_id))
       .send({
         from: account,
-        gasLimit: 6721900,
-        gasPrice: new BN(await this.web3.eth.getGasPrice()).mul(new BN(1)),
+        gasLimit: this.options.gasLimit,
+        gasPrice: this.options.gasPrice,
       }).on('transactionHash', sendTxCallback);
   };
 
   getIssueId = async (requester: string) => {
     const addressHex = getAddress(requester).checksum;
 
-    return await this.oneBTCContract.methods.getIssueId(addressHex).call();
+    return await this.contract.methods.getIssueId(addressHex).call();
   };
 
 
@@ -160,14 +157,14 @@ export class HmyMethodsWeb3 {
     const addressHex = getAddress(recipient).checksum;
 
     const amountBN = utils.toBN(amount);
-    return this.oneBTCContract.methods.transfer(addressHex, amountBN).send({
+    return this.contract.methods.transfer(addressHex, amountBN).send({
       from: account,
-      gasLimit: 6721900,
-      gasPrice: new BN(await this.web3.eth.getGasPrice()).mul(new BN(1)),
+      gasLimit: this.options.gasLimit,
+      gasPrice: this.options.gasPrice,
     }).on('transactionHash', sendTxCallback);
   }
 
-  requestRedeem = async (amountOneBtc: number, btcAddress: string, vaultId: string, sendTxCallback?: (hash: string) => void) => {
+  requestRedeem = async (amountOneBtc: number, btcAddress: string, vaultId: string, sendTxCallback?: SendTxCallback) => {
     let accounts;
     if (this.useMetamask) {
       // @ts-ignore
@@ -182,10 +179,10 @@ export class HmyMethodsWeb3 {
       ? accounts[0]
       : this.web3.eth.defaultAccount;
 
-    return this.oneBTCContract.methods.requestRedeem(_amountOneBtcBN, btcAddress, addressHex).send({
+    return this.contract.methods.requestRedeem(_amountOneBtcBN, btcAddress, addressHex).send({
       from: account,
-      gasLimit: 6721900,
-      gasPrice: new BN(await this.web3.eth.getGasPrice()).mul(new BN(1)),
+      gasLimit: this.options.gasLimit,
+      gasPrice: this.options.gasPrice,
     }).on('transactionHash', sendTxCallback);
   }
 
@@ -196,7 +193,7 @@ export class HmyMethodsWeb3 {
     rawTx: any,
     heightAndIndex: any,
     header: any,
-    sendTxCallback?: (hash: string) => void
+    sendTxCallback?: SendTxCallback
   ) => {
     let accounts;
     if (this.useMetamask) {
@@ -210,7 +207,7 @@ export class HmyMethodsWeb3 {
       ? accounts[0]
       : this.web3.eth.defaultAccount;
 
-    return await this.oneBTCContract.methods
+    return await this.contract.methods
       .executeRedeem(
         addressHex,
         utils.toBN(redeemId),
@@ -221,21 +218,21 @@ export class HmyMethodsWeb3 {
       )
       .send({
         from: account,
-        gasLimit: 6721900,
-        gasPrice: new BN(await this.web3.eth.getGasPrice()).mul(new BN(1)),
+        gasLimit: this.options.gasLimit,
+        gasPrice: this.options.gasPrice,
       }).on('transactionHash', sendTxCallback);
   }
 
   balanceOf = async (requester: string) => {
     const addressHex = getAddress(requester).checksum;
 
-    return await this.oneBTCContract.methods.balanceOf(addressHex).call();
+    return await this.contract.methods.balanceOf(addressHex).call();
   };
 
   register_vault = async (
     x: string,
     y: string,
-    sendTxCallback?: (hash: string) => void
+    sendTxCallback?: SendTxCallback
   ) => {
     let accounts;
     if (this.useMetamask) {
@@ -247,22 +244,23 @@ export class HmyMethodsWeb3 {
       ? accounts[0]
       : this.web3.eth.defaultAccount;
 
-    return await this.oneBTCContract.methods
+    return await this.contract.methods
       .registerVault(utils.toBN(x), utils.toBN(y))
       .send({
         from: account,
-        gasLimit: 6721900,
-        gasPrice: new BN(await this.web3.eth.getGasPrice()).mul(new BN(1)),
-      });
+        gasLimit: this.options.gasLimit,
+        gasPrice: this.options.gasPrice,
+      }).on('transactionHash', sendTxCallback);
   };
 
-  getIssueDetails = async (txHash: string) => {
+  getIssueDetails = async (txHash: string): Promise<IssueDetails | void> => {
     const receipt = await this.web3.eth.getTransactionReceipt(txHash);
 
     let decoded: any;
 
     receipt.logs.forEach(async (log: any) => {
       try {
+
         decoded = this.web3.eth.abi.decodeLog(
           [
             {
@@ -311,7 +309,7 @@ export class HmyMethodsWeb3 {
     return decoded;
   };
 
-  getRedeemDetails = async (txHash: string) => {
+  getRedeemDetails = async (txHash: string): Promise<RedeemDetails | void> => {
     const receipt = await this.web3.eth.getTransactionReceipt(txHash);
 
     let decoded: any;
