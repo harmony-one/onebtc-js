@@ -4,6 +4,7 @@ import { getAddress } from "@harmony-js/crypto";
 import { OneBtc } from "../out/OneBtc";
 import IContractMethods, {IssueDetails, RedeemDetails, SendTxCallback} from "./types";
 import {loadBlockByHeight, loadBtcTx, loadMerkleProof} from "./bitcoin";
+import {Transaction} from "bitcoinjs-lib";
 const utils = require("web3-utils");
 
 interface IHmyMethodsInitParams {
@@ -93,12 +94,16 @@ export class HmyMethodsWeb3 implements IContractMethods {
     const txBlock = await loadBlockByHeight(height);
     const proof = await loadMerkleProof(hash, height);
 
+    const tx = Transaction.fromHex(hex);
+    // @ts-ignore
+    const hexForTxId = tx.__toBuffer().toString('hex');
+
     return await this.contract.methods
       .executeIssue(
         addressHex,
         utils.toBN(issue_id),
         '0x' + proof,
-        Buffer.from(hex, 'hex'),
+        '0x' + hexForTxId,
         height,
         index,
         '0x' + txBlock.toHex(),
