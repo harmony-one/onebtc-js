@@ -96,6 +96,10 @@ export class HmyMethods implements IContractMethods {
       }).on('transactionHash', sendTxCallback);
   };
 
+  getIssueStatus = (requester: string, issueId: string) => {
+    return this.contract.methods.getIssueStatus(requester, issueId).call();
+  }
+
   executeIssue = async (
     requester: string,
     issueId: string,
@@ -136,23 +140,31 @@ export class HmyMethods implements IContractMethods {
   executeRedeem = async (
     requester: string,
     redeemId: number,
-    merkleProof: any,
-    rawTx: any,
-    heightAndIndex: any,
+    btcTxHash: any,
     header: any,
     sendTxCallback?: SendTxCallback
   ) => {
     const addressHex = this.prepareAddress(requester);
+
+    const btcTx = await loadBtcTx(btcTxHash);
+    const { height, index, hash, hex } = btcTx;
+    const txBlock = await loadBlockByHeight(height);
+    const proof = await loadMerkleProof(hash, height);
+
+    const tx = Transaction.fromHex(hex);
+    // @ts-ignore
+    const hexForTxId = tx.__toBuffer().toString('hex');
 
     const from = await this.getSenderAddress();
     return await this.contract.methods
       .executeRedeem(
         addressHex,
         utils.toBN(redeemId),
-        merkleProof,
-        rawTx,
-        utils.toBN(heightAndIndex),
-        header
+        '0x' + proof,
+        '0x' + hexForTxId,
+        height,
+        index,
+        '0x' + txBlock.toHex(),
       )
       .send({
         from,

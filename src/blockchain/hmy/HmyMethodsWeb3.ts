@@ -73,7 +73,7 @@ export class HmyMethodsWeb3 implements IContractMethods {
 
   executeIssue = async (
     requester: string,
-    issue_id: string,
+    issueId: string,
     btcTxHash: string,
     sendTxCallback?: (hash: string) => void
   ) => {
@@ -101,7 +101,7 @@ export class HmyMethodsWeb3 implements IContractMethods {
     return await this.contract.methods
       .executeIssue(
         addressHex,
-        utils.toBN(issue_id),
+        utils.toBN(issueId),
         '0x' + proof,
         '0x' + hexForTxId,
         height,
@@ -194,10 +194,7 @@ export class HmyMethodsWeb3 implements IContractMethods {
   executeRedeem = async (
     requester: string,
     redeemId: number,
-    merkleProof: any,
-    rawTx: any,
-    heightAndIndex: any,
-    header: any,
+    btcTxHash: string,
     sendTxCallback?: SendTxCallback
   ) => {
     let accounts;
@@ -206,20 +203,31 @@ export class HmyMethodsWeb3 implements IContractMethods {
       accounts = await ethereum.enable();
     }
 
+    const btcTx = await loadBtcTx(btcTxHash);
+    const { height, index, hash, hex } = btcTx;
+    const txBlock = await loadBlockByHeight(height);
+    const proof = await loadMerkleProof(hash, height);
+
+    const tx = Transaction.fromHex(hex);
+    // @ts-ignore
+    const hexForTxId = tx.__toBuffer().toString('hex');
+
     const addressHex = getAddress(requester).checksum;
 
     const account = this.useMetamask
       ? accounts[0]
       : this.web3.eth.defaultAccount;
 
+    debugger;
     return await this.contract.methods
       .executeRedeem(
         addressHex,
         utils.toBN(redeemId),
-        merkleProof,
-        rawTx,
-        utils.toBN(heightAndIndex),
-        header
+        '0x' + proof,
+        '0x' + hexForTxId,
+        height,
+        index,
+        '0x' + txBlock.toHex(),
       )
       .send({
         from: account,
@@ -313,6 +321,10 @@ export class HmyMethodsWeb3 implements IContractMethods {
 
     return decoded;
   };
+
+  getIssueStatus = (requester: string, issueId: string) => {
+    return this.contract.methods.getIssueStatus(requester, issueId).call();
+  }
 
   getRedeemDetails = async (txHash: string): Promise<RedeemDetails | void> => {
     const receipt = await this.web3.eth.getTransactionReceipt(txHash);

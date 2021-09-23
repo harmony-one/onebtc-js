@@ -4,8 +4,7 @@ import assert from "@summa-tx/bitcoin-spv-js-clients/lib/vendor/bsert";
 import merkle from "@summa-tx/bitcoin-spv-js-clients/lib/vendor/merkle";
 import hash256 from "@summa-tx/bitcoin-spv-js-clients/lib/vendor/hash256";
 
-const BTC_RPC_HOST = '161.35.125.60';
-const BTC_RPC_URL = `http://${BTC_RPC_HOST}`;
+const BTC_RPC_URL = 'https://btc.test.hmny.io';
 
 export const reverseAndSwap = (dataP: string | number) => {
   let data = typeof dataP === 'number' ? dataP.toString(16) : dataP;
