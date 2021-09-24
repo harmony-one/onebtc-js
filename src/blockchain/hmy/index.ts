@@ -42,7 +42,7 @@ export const getHmyClient = async (
   // const hmyUserAccount = await hmy.wallet.createAccount();
 
   let userAddress: string;
-  let methods: IContractMethods;
+  let methods: HmyMethods | HmyMethodsWeb3;
 
   let nodeURL = params.nodeURL;
 

@@ -44,6 +44,10 @@ export class HmyMethods implements IContractMethods {
     this.onewallet = window.onewallet;
   }
 
+  getRedeemStatus(requester: string, redeemId: string): Promise<string> {
+    return this.contract.methods.getRedeemStatus(requester, redeemId).call();
+  }
+
   private injectSignTransaction = async () => {
 
     const account = await this.onewallet.getAccount();

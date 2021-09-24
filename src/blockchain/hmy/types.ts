@@ -40,7 +40,8 @@ export default interface IContractMethods {
   setUseMathWallet(value: boolean): boolean
   setUseMetamask(value: boolean): boolean;
   requestIssue(amount: number, address: string, sendTxCallback?: SendTxCallback): Promise<TransactionReceipt>;
-  getIssueStatus(requester: string, issueId: string): Promise<any>
+  getRedeemStatus(requester: string, redeemId: string): Promise<string>;
+  getIssueStatus(requester: string, issueId: string): Promise<string>;
   executeIssue(
     requester: string,
     issueId: string,
@@ -72,6 +73,7 @@ export default interface IContractMethods {
     y: string,
     sendTxCallback?: SendTxCallback
   ): Promise<any>
+
 
   getIssueDetails(txHash: string): Promise<IssueDetails | void>;
   getRedeemDetails(txHash: string): Promise<RedeemDetails | void>;

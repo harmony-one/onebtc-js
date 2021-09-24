@@ -14,6 +14,8 @@ interface IHmyMethodsInitParams {
   options?: { gasPrice: number; gasLimit: number };
 }
 
+const emptyFunction = () => {};
+
 export class HmyMethodsWeb3 implements IContractMethods {
   public web3: Web3;
 
@@ -68,7 +70,7 @@ export class HmyMethodsWeb3 implements IContractMethods {
         gasLimit: this.options.gasLimit,
         gasPrice: this.options.gasPrice,
         value: utils.toBN(amount),
-      }).on('transactionHash', sendTxCallback);
+      }).on('transactionHash', sendTxCallback || emptyFunction);
   };
 
   executeIssue = async (
@@ -188,7 +190,7 @@ export class HmyMethodsWeb3 implements IContractMethods {
       from: account,
       gasLimit: this.options.gasLimit,
       gasPrice: this.options.gasPrice,
-    }).on('transactionHash', sendTxCallback);
+    }).on('transactionHash', sendTxCallback || emptyFunction);
   }
 
   executeRedeem = async (
@@ -234,6 +236,10 @@ export class HmyMethodsWeb3 implements IContractMethods {
         gasLimit: this.options.gasLimit,
         gasPrice: this.options.gasPrice,
       }).on('transactionHash', sendTxCallback);
+  }
+
+  getRedeemStatus(requester: string, redeemId: string): Promise<string> {
+    return this.contract.methods.getRedeemStatus(requester, redeemId).call();
   }
 
   balanceOf = async (requester: string) => {
