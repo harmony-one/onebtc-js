@@ -2,7 +2,7 @@ import Web3 from "web3";
 import { Contract } from "web3-eth-contract";
 import { getAddress } from "@harmony-js/crypto";
 import { OneBtc } from "../out/OneBtc";
-import IContractMethods, {IssueDetails, RedeemDetails, SendTxCallback} from "./types";
+import IContractMethods, {IssueDetails, RedeemDetails, RedeemStatus, SendTxCallback} from "./types";
 import {loadBlockByHeight, loadBtcTx, loadMerkleProof} from "./bitcoin";
 import {Transaction} from "bitcoinjs-lib";
 const utils = require("web3-utils");
@@ -46,27 +46,32 @@ export class HmyMethodsWeb3 implements IContractMethods {
 
   setUseMetamask = (value: boolean) => (this.useMetamask = value);
 
-  requestIssue = async (
-    amount: number,
-    address: string,
-    sendTxCallback?: (hash: string) => void
-  ) => {
-    let accounts;
+  getSenderAddress = async (): Promise<string> => {
     if (this.useMetamask) {
       // @ts-ignore
-      accounts = await ethereum.enable();
+      let accounts = await ethereum.enable();
+      return accounts[0];
     }
 
-    const addressHex = getAddress(address).checksum;
+    return this.web3.eth.defaultAccount;
+  }
 
-    const account = this.useMetamask
-      ? accounts[0]
-      : this.web3.eth.defaultAccount;
+  private _prepareAddress(address: string) {
+    return getAddress(address).checksum;
+  }
+
+  requestIssue = async (
+    amount: number,
+    requesterAddress: string,
+    sendTxCallback?: (hash: string) => void
+  ) => {
+    const addressHex = this._prepareAddress(requesterAddress);
+    const senderAddress = await this.getSenderAddress();
 
     return await this.contract.methods
       .requestIssue(utils.toBN(amount), addressHex)
       .send({
-        from: account,
+        from: senderAddress,
         gasLimit: this.options.gasLimit,
         gasPrice: this.options.gasPrice,
         value: utils.toBN(amount),
@@ -74,22 +79,12 @@ export class HmyMethodsWeb3 implements IContractMethods {
   };
 
   executeIssue = async (
-    requester: string,
+    requesterAddress: string,
     issueId: string,
     btcTxHash: string,
     sendTxCallback?: (hash: string) => void
   ) => {
-    let accounts;
-    if (this.useMetamask) {
-      // @ts-ignore
-      accounts = await ethereum.enable();
-    }
-
-    const addressHex = getAddress(requester).checksum;
-
-    const account = this.useMetamask
-      ? accounts[0]
-      : this.web3.eth.defaultAccount;
+    const addressHex = this._prepareAddress(requesterAddress);
 
     const btcTx = await loadBtcTx(btcTxHash);
     const { height, index, hash, hex } = btcTx;
@@ -99,6 +94,8 @@ export class HmyMethodsWeb3 implements IContractMethods {
     const tx = Transaction.fromHex(hex);
     // @ts-ignore
     const hexForTxId = tx.__toBuffer().toString('hex');
+
+    const senderAddress = await this.getSenderAddress();
 
     return await this.contract.methods
       .executeIssue(
@@ -111,116 +108,77 @@ export class HmyMethodsWeb3 implements IContractMethods {
         '0x' + txBlock.toHex(),
       )
       .send({
-        from: account,
+        from: senderAddress,
         gasLimit: this.options.gasLimit,
         gasPrice: this.options.gasPrice,
       }).on('transactionHash', sendTxCallback);
   };
 
   cancelIssue = async (
-    requester: string,
-    issue_id: number,
+    requesterAddress: string,
+    issueId: number,
     sendTxCallback?: (hash: string) => void
   ) => {
-    let accounts;
-    if (this.useMetamask) {
-      // @ts-ignore
-      accounts = await ethereum.enable();
-    }
-
-    const addressHex = getAddress(requester).checksum;
-
-    const account = this.useMetamask
-      ? accounts[0]
-      : this.web3.eth.defaultAccount;
+    const addressHex = this._prepareAddress(requesterAddress);
+    const senderAddress = await this.getSenderAddress();
 
     return await this.contract.methods
-      .cancelIssue(addressHex, utils.toBN(issue_id))
+      .cancelIssue(addressHex, utils.toBN(issueId))
       .send({
-        from: account,
+        from: senderAddress,
         gasLimit: this.options.gasLimit,
         gasPrice: this.options.gasPrice,
-      }).on('transactionHash', sendTxCallback);
+      }).on('transactionHash', sendTxCallback || emptyFunction);
   };
 
-  getIssueId = async (requester: string) => {
-    const addressHex = getAddress(requester).checksum;
+  getIssueId = async (requesterAddress: string) => {
+    const addressHex = this._prepareAddress(requesterAddress);
 
     return await this.contract.methods.getIssueId(addressHex).call();
   };
 
 
   transfer = async (recipient: string, amount: number, sendTxCallback?: (hash: string) => void) => {
-    let accounts;
-    if (this.useMetamask) {
-      // @ts-ignore
-      accounts = await ethereum.enable();
-    }
-
-    const account = this.useMetamask
-      ? accounts[0]
-      : this.web3.eth.defaultAccount;
-
-    const addressHex = getAddress(recipient).checksum;
-
+    const addressHex = this._prepareAddress(recipient);
     const amountBN = utils.toBN(amount);
+    const senderAddress = await this.getSenderAddress();
     return this.contract.methods.transfer(addressHex, amountBN).send({
-      from: account,
+      from: senderAddress,
       gasLimit: this.options.gasLimit,
       gasPrice: this.options.gasPrice,
-    }).on('transactionHash', sendTxCallback);
+    }).on('transactionHash', sendTxCallback || emptyFunction);
   }
 
   requestRedeem = async (amountOneBtc: number, btcAddress: string, vaultId: string, sendTxCallback?: SendTxCallback) => {
-    let accounts;
-    if (this.useMetamask) {
-      // @ts-ignore
-      accounts = await ethereum.enable();
-    }
+    const amountBN = utils.toBN(amountOneBtc);
+    const addressHex = this._prepareAddress(vaultId);
+    const senderAddress = await this.getSenderAddress();
 
-    const _amountOneBtcBN = utils.toBN(amountOneBtc);
-
-    const addressHex = getAddress(vaultId).checksum;
-
-    const account = this.useMetamask
-      ? accounts[0]
-      : this.web3.eth.defaultAccount;
-
-    return this.contract.methods.requestRedeem(_amountOneBtcBN, btcAddress, addressHex).send({
-      from: account,
+    return this.contract.methods.requestRedeem(amountBN, btcAddress, addressHex).send({
+      from: senderAddress,
       gasLimit: this.options.gasLimit,
       gasPrice: this.options.gasPrice,
     }).on('transactionHash', sendTxCallback || emptyFunction);
   }
 
   executeRedeem = async (
-    requester: string,
+    requesterAddress: string,
     redeemId: number,
     btcTxHash: string,
     sendTxCallback?: SendTxCallback
   ) => {
-    let accounts;
-    if (this.useMetamask) {
-      // @ts-ignore
-      accounts = await ethereum.enable();
-    }
-
     const btcTx = await loadBtcTx(btcTxHash);
     const { height, index, hash, hex } = btcTx;
     const txBlock = await loadBlockByHeight(height);
     const proof = await loadMerkleProof(hash, height);
 
     const tx = Transaction.fromHex(hex);
-    // @ts-ignore
+    // @ts-expect-error Property '__toBuffer' is private and only accessible within class 'Transaction'.
     const hexForTxId = tx.__toBuffer().toString('hex');
 
-    const addressHex = getAddress(requester).checksum;
+    const addressHex = this._prepareAddress(requesterAddress);
+    const senderAddress = await this.getSenderAddress();
 
-    const account = this.useMetamask
-      ? accounts[0]
-      : this.web3.eth.defaultAccount;
-
-    debugger;
     return await this.contract.methods
       .executeRedeem(
         addressHex,
@@ -232,20 +190,20 @@ export class HmyMethodsWeb3 implements IContractMethods {
         '0x' + txBlock.toHex(),
       )
       .send({
-        from: account,
+        from: senderAddress,
         gasLimit: this.options.gasLimit,
         gasPrice: this.options.gasPrice,
       }).on('transactionHash', sendTxCallback);
   }
 
-  getRedeemStatus(requester: string, redeemId: string): Promise<string> {
-    return this.contract.methods.getRedeemStatus(requester, redeemId).call();
+  getRedeemStatus(requesterAddress: string, redeemId: string): Promise<RedeemStatus> {
+    const addressHex = this._prepareAddress(requesterAddress);
+    return this.contract.methods.getRedeemStatus(addressHex, redeemId).call();
   }
 
-  balanceOf = async (requester: string) => {
-    const addressHex = getAddress(requester).checksum;
-
-    return await this.contract.methods.balanceOf(addressHex).call();
+  balanceOf = (requesterAddress: string) => {
+    const addressHex = this._prepareAddress(requesterAddress);
+    return this.contract.methods.balanceOf(addressHex).call();
   };
 
   register_vault = async (
@@ -253,20 +211,12 @@ export class HmyMethodsWeb3 implements IContractMethods {
     y: string,
     sendTxCallback?: SendTxCallback
   ) => {
-    let accounts;
-    if (this.useMetamask) {
-      // @ts-ignore
-      accounts = await ethereum.enable();
-    }
-
-    const account = this.useMetamask
-      ? accounts[0]
-      : this.web3.eth.defaultAccount;
+    const senderAddress = await this.getSenderAddress();
 
     return await this.contract.methods
       .registerVault(utils.toBN(x), utils.toBN(y))
       .send({
-        from: account,
+        from: senderAddress,
         gasLimit: this.options.gasLimit,
         gasPrice: this.options.gasPrice,
       }).on('transactionHash', sendTxCallback);
@@ -328,8 +278,9 @@ export class HmyMethodsWeb3 implements IContractMethods {
     return decoded;
   };
 
-  getIssueStatus = (requester: string, issueId: string) => {
-    return this.contract.methods.getIssueStatus(requester, issueId).call();
+  getIssueStatus = (requesterAddress: string, issueId: string) => {
+    const addressHex = this._prepareAddress(requesterAddress);
+    return this.contract.methods.getIssueStatus(addressHex, issueId).call();
   }
 
   getRedeemDetails = async (txHash: string): Promise<RedeemDetails | void> => {

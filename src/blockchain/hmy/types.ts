@@ -10,6 +10,16 @@ export interface RedeemDetails {
   btc_address: string;
 }
 
+export enum IssueStatus {
+  PENDING = '1',
+  COMPLETED = '2'
+}
+
+export enum RedeemStatus {
+  PENDING = '1',
+  COMPLETED = '2'
+}
+
 export interface IssueDetails {
   issue_id: string
   amount: string;
@@ -40,8 +50,8 @@ export default interface IContractMethods {
   setUseMathWallet(value: boolean): boolean
   setUseMetamask(value: boolean): boolean;
   requestIssue(amount: number, address: string, sendTxCallback?: SendTxCallback): Promise<TransactionReceipt>;
-  getRedeemStatus(requester: string, redeemId: string): Promise<string>;
-  getIssueStatus(requester: string, issueId: string): Promise<string>;
+  getRedeemStatus(requester: string, redeemId: string): Promise<RedeemStatus>;
+  getIssueStatus(requester: string, issueId: string): Promise<IssueStatus>;
   executeIssue(
     requester: string,
     issueId: string,
