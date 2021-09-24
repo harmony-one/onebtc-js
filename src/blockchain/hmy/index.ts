@@ -1,10 +1,9 @@
-import Web3 from "web3";
-const { Harmony } = require("@harmony-js/core");
-const { ChainType } = require("@harmony-js/utils");
-import { HmyMethods } from "./HmyMethods";
-import { HmyMethodsWeb3 } from "./HmyMethodsWeb3";
-import IContractMethods from "./types";
-
+import Web3 from 'web3';
+import { Harmony } from '@harmony-js/core';
+import { ChainType } from '@harmony-js/utils';
+import { HmyMethods } from './HmyMethods';
+import { HmyMethodsWeb3 } from './HmyMethodsWeb3';
+import IContractMethods from './types';
 
 export interface IHmyClient {
   methods: IContractMethods;
@@ -15,7 +14,7 @@ export interface IHmyClient {
 }
 
 export interface IHmyClientParams {
-  sdk?: "harmony" | "web3";
+  sdk?: 'harmony' | 'web3';
   nodeURL: string;
   chainId: number;
   contractAddress: string;
@@ -24,7 +23,7 @@ export interface IHmyClientParams {
 }
 
 export const getHmyClient = async (
-  params: IHmyClientParams
+  params: IHmyClientParams,
 ): Promise<IHmyClient> => {
   const hmy = new Harmony(
     // let's assume we deploy smart contract to this end-point URL
@@ -32,7 +31,7 @@ export const getHmyClient = async (
     {
       chainType: ChainType.Harmony,
       chainId: Number(params.chainId),
-    }
+    },
   );
 
   // const hmyUserAccount = params.privateKey
@@ -46,15 +45,15 @@ export const getHmyClient = async (
 
   let nodeURL = params.nodeURL;
 
-  // @ts-ignore
-  if (typeof window === "object" && window.web3) {
-    // @ts-ignore
+  // @ts-expect-error window.web3
+  if (typeof window === 'object' && window.web3) {
+    // @ts-expect-error window.web3
     nodeURL = window.web3.currentProvider;
   }
 
   const web3 = new Web3(nodeURL);
 
-  if (params.sdk === "web3") {
+  if (params.sdk === 'web3') {
     methods = new HmyMethodsWeb3({
       web3,
       contractAddress: params.contractAddress,
@@ -76,9 +75,9 @@ export const getHmyClient = async (
   return {
     methods,
     addWallet: async (privateKey: string) => {
-      if (params.sdk === "web3") {
+      if (params.sdk === 'web3') {
         const ethUserAccount = await web3.eth.accounts.privateKeyToAccount(
-          privateKey
+          privateKey,
         );
         web3.eth.accounts.wallet.add(ethUserAccount);
         web3.eth.defaultAccount = ethUserAccount.address;
@@ -91,14 +90,14 @@ export const getHmyClient = async (
     },
     getUserAddress: () => userAddress,
     setUseOneWallet: (value: boolean) => {
-      if (params.sdk === "web3") {
+      if (params.sdk === 'web3') {
         methods.setUseMetamask(value);
       } else {
         methods.setUseOneWallet(value);
       }
     },
     setUseMathWallet: (value: boolean) => {
-      if (params.sdk === "web3") {
+      if (params.sdk === 'web3') {
         methods.setUseMetamask(value);
       } else {
         methods.setUseOneWallet(value);

@@ -1,6 +1,5 @@
 export type SendTxCallback = (txHash: string) => void;
 
-
 export interface RedeemDetails {
   redeem_id: string;
   amount: string;
@@ -12,20 +11,20 @@ export interface RedeemDetails {
 
 export enum IssueStatus {
   PENDING = '1',
-  COMPLETED = '2'
+  COMPLETED = '2',
 }
 
 export enum RedeemStatus {
   PENDING = '1',
-  COMPLETED = '2'
+  COMPLETED = '2',
 }
 
 export interface IssueDetails {
-  issue_id: string
+  issue_id: string;
   amount: string;
   fee: string;
-  requester: string
-  vault_id: string,
+  requester: string;
+  vault_id: string;
   btc_address: string;
 }
 
@@ -34,7 +33,7 @@ export interface TransactionReceipt {
   blockNumber: number;
   contractAddress: null;
   cumulativeGasUsed: number;
-  events: {};
+  events: Record<string, unknown>;
   gasUsed: number;
   logsBloom: string;
   status: boolean;
@@ -45,45 +44,57 @@ export interface TransactionReceipt {
 
 export default interface IContractMethods {
   // web3: Web3;
-  init(): Promise<void>
-  setUseOneWallet(value: boolean): boolean
-  setUseMathWallet(value: boolean): boolean
+  init(): Promise<void>;
+  setUseOneWallet(value: boolean): boolean;
+  setUseMathWallet(value: boolean): boolean;
   setUseMetamask(value: boolean): boolean;
-  requestIssue(amount: number, address: string, sendTxCallback?: SendTxCallback): Promise<TransactionReceipt>;
+  requestIssue(
+    amount: number,
+    address: string,
+    sendTxCallback?: SendTxCallback,
+  ): Promise<TransactionReceipt>;
   getRedeemStatus(requester: string, redeemId: string): Promise<RedeemStatus>;
   getIssueStatus(requester: string, issueId: string): Promise<IssueStatus>;
   executeIssue(
     requester: string,
     issueId: string,
     btcTxHash: string,
-    sendTxCallback?: SendTxCallback
-  ): Promise<TransactionReceipt>
+    sendTxCallback?: SendTxCallback,
+  ): Promise<TransactionReceipt>;
 
   cancelIssue(
     requester: string,
     issueId: number,
-    sendTxCallback?: SendTxCallback
-  ): Promise<TransactionReceipt>
+    sendTxCallback?: SendTxCallback,
+  ): Promise<TransactionReceipt>;
 
   getIssueId(requester: string): Promise<any>;
 
-  transfer(recipient: string, amount: number, sendTxCallback?: SendTxCallback): Promise<TransactionReceipt>;
-  requestRedeem(amountOneBtc: number, btcAddress: string, vaultId: string, sendTxCallback?: SendTxCallback): Promise<TransactionReceipt>;
+  transfer(
+    recipient: string,
+    amount: number,
+    sendTxCallback?: SendTxCallback,
+  ): Promise<TransactionReceipt>;
+  requestRedeem(
+    amountOneBtc: number,
+    btcAddress: string,
+    vaultId: string,
+    sendTxCallback?: SendTxCallback,
+  ): Promise<TransactionReceipt>;
 
   executeRedeem(
     requester: string,
     redeemId: number,
     rawTx: any,
-    sendTxCallback?: SendTxCallback
-  ): Promise<TransactionReceipt>
+    sendTxCallback?: SendTxCallback,
+  ): Promise<TransactionReceipt>;
   balanceOf(requester: string): Promise<any>;
 
   register_vault(
     x: string,
     y: string,
-    sendTxCallback?: SendTxCallback
-  ): Promise<any>
-
+    sendTxCallback?: SendTxCallback,
+  ): Promise<any>;
 
   getIssueDetails(txHash: string): Promise<IssueDetails | void>;
   getRedeemDetails(txHash: string): Promise<RedeemDetails | void>;

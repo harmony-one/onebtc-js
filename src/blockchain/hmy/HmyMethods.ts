@@ -1,16 +1,22 @@
-import { Harmony, } from "@harmony-js/core";
-import { OneBtc } from "../out/OneBtc";
-import { Contract } from "@harmony-js/contract";
-import IContractMethods, {IssueDetails, IssueStatus, RedeemDetails, RedeemStatus, SendTxCallback} from "./types";
-import {getAddress} from "@harmony-js/crypto";
-import Web3 from "web3";
-import {loadBlockByHeight, loadBtcTx, loadMerkleProof} from "./bitcoin";
-import {Transaction} from "bitcoinjs-lib";
-const utils = require("web3-utils");
+import { Harmony } from '@harmony-js/core';
+import { OneBtc } from '../out/OneBtc';
+import { Contract } from '@harmony-js/contract';
+import IContractMethods, {
+  IssueDetails,
+  IssueStatus,
+  RedeemDetails,
+  RedeemStatus,
+  SendTxCallback,
+} from './types';
+import { getAddress } from '@harmony-js/crypto';
+import Web3 from 'web3';
+import { loadBlockByHeight, loadBtcTx, loadMerkleProof } from './bitcoin';
+import { Transaction } from 'bitcoinjs-lib';
+import utils from 'web3-utils';
 
 interface IHmyMethodsInitParams {
   hmy: Harmony;
-  web3: Web3,
+  web3: Web3;
   contractAddress: string;
   nodeURL: string;
   options?: { gasPrice: number; gasLimit: number };
@@ -22,7 +28,7 @@ export class HmyMethods implements IContractMethods {
   public contractAddress: string;
 
   public nodeURL: string;
-  public contract: Contract
+  public contract: Contract;
 
   public options = { gasPrice: 1000000000, gasLimit: 6721900 };
   private onewallet: any;
@@ -40,11 +46,13 @@ export class HmyMethods implements IContractMethods {
       };
     }
 
-    // @ts-ignore
     this.onewallet = window.onewallet;
   }
 
-  getRedeemStatus(requesterAddress: string, redeemId: string): Promise<RedeemStatus> {
+  getRedeemStatus(
+    requesterAddress: string,
+    redeemId: string,
+  ): Promise<RedeemStatus> {
     const addressHex = this._prepareAddress(requesterAddress);
     return this.contract.methods.getRedeemStatus(addressHex, redeemId).call();
   }
@@ -54,12 +62,10 @@ export class HmyMethods implements IContractMethods {
     const address = this._prepareAddress(account.address);
     this.contract.wallet.defaultSigner = address;
     this.contract.wallet.signTransaction = async (tx: any) => {
-
       tx.from = this._prepareAddress(address);
-      // @ts-expect-error Property 'onewallet' does not exist on type 'Window & typeof globalThis'.
       return window.onewallet.signTransaction(tx);
-    }
-  }
+    };
+  };
 
   private _prepareAddress(address: string) {
     return getAddress(address).checksum;
@@ -68,12 +74,14 @@ export class HmyMethods implements IContractMethods {
   getSenderAddress = async (): Promise<string> => {
     const account = await this.onewallet.getAccount();
     return this._prepareAddress(account.address);
-  }
+  };
 
   init = async () => {
-    this.contract = this.hmy.contracts.createContract(OneBtc.abi, this.contractAddress);
+    this.contract = this.hmy.contracts.createContract(
+      OneBtc.abi,
+      this.contractAddress,
+    );
 
-    // @ts-ignore
     if (this.onewallet) {
       this._injectSignTransaction();
     }
@@ -82,12 +90,12 @@ export class HmyMethods implements IContractMethods {
   balanceOf = (requesterAddress: string): Promise<string> => {
     const addressHex = this._prepareAddress(requesterAddress);
     return this.contract.methods.balanceOf(addressHex).call();
-  }
+  };
 
   cancelIssue = async (
     requesterAddress: string,
     issueId: number,
-    sendTxCallback?: SendTxCallback
+    sendTxCallback?: SendTxCallback,
   ) => {
     const addressHex = this._prepareAddress(requesterAddress);
     const senderAddress = await this.getSenderAddress();
@@ -97,10 +105,14 @@ export class HmyMethods implements IContractMethods {
         from: senderAddress,
         gasLimit: this.options.gasLimit,
         gasPrice: this.options.gasPrice,
-      }).on('transactionHash', sendTxCallback);
+      })
+      .on('transactionHash', sendTxCallback);
   };
 
-  getIssueStatus = (requesterAddress: string, issueId: string): Promise<IssueStatus> => {
+  getIssueStatus = (
+    requesterAddress: string,
+    issueId: string,
+  ): Promise<IssueStatus> => {
     const addressHex = this._prepareAddress(requesterAddress);
     return this.contract.methods.getIssueStatus(addressHex, issueId).call();
   };
@@ -117,7 +129,7 @@ export class HmyMethods implements IContractMethods {
     const proof = await loadMerkleProof(hash, height);
 
     const tx = Transaction.fromHex(hex);
-    // @ts-ignore
+    // @ts-expect-error TS2341: Property '__toBuffer' is private and only accessible within class 'Transaction'.
     const hexForTxId = tx.__toBuffer().toString('hex');
     const senderAddress = await this.getSenderAddress();
     const addressHex = this._prepareAddress(requesterAddress);
@@ -137,7 +149,8 @@ export class HmyMethods implements IContractMethods {
         senderAddress,
         gasLimit: this.options.gasLimit,
         gasPrice: this.options.gasPrice,
-      }).on('transactionHash', sendTxCallback);
+      })
+      .on('transactionHash', sendTxCallback);
   };
 
   executeRedeem = async (
@@ -145,7 +158,7 @@ export class HmyMethods implements IContractMethods {
     redeemId: number,
     btcTxHash: any,
     header: any,
-    sendTxCallback?: SendTxCallback
+    sendTxCallback?: SendTxCallback,
   ) => {
     const addressHex = this._prepareAddress(requesterAddress);
 
@@ -155,7 +168,7 @@ export class HmyMethods implements IContractMethods {
     const proof = await loadMerkleProof(hash, height);
 
     const tx = Transaction.fromHex(hex);
-    // @ts-ignore
+    // @ts-expect-error TS2341: Property '__toBuffer' is private and only accessible within class 'Transaction'.
     const hexForTxId = tx.__toBuffer().toString('hex');
 
     const senderAddress = await this.getSenderAddress();
@@ -173,12 +186,14 @@ export class HmyMethods implements IContractMethods {
         from: senderAddress,
         gasLimit: this.options.gasLimit,
         gasPrice: this.options.gasPrice,
-      }).on('transactionHash', sendTxCallback);
-  }
+      })
+      .on('transactionHash', sendTxCallback);
+  };
 
   getIssueDetails = async (txHash: string): Promise<IssueDetails | void> => {
-
-    const receipt = await this.hmy.blockchain.getTransactionReceipt({txnHash: txHash});
+    const receipt = await this.hmy.blockchain.getTransactionReceipt({
+      txnHash: txHash,
+    });
 
     let decoded;
 
@@ -188,52 +203,56 @@ export class HmyMethods implements IContractMethods {
           [
             {
               indexed: true,
-              internalType: "uint256",
-              name: "issue_id",
-              type: "uint256",
+              internalType: 'uint256',
+              name: 'issue_id',
+              type: 'uint256',
             },
             {
               indexed: true,
-              internalType: "address",
-              name: "requester",
-              type: "address",
+              internalType: 'address',
+              name: 'requester',
+              type: 'address',
             },
             {
               indexed: true,
-              internalType: "address",
-              name: "vault_id",
-              type: "address",
+              internalType: 'address',
+              name: 'vault_id',
+              type: 'address',
             },
             {
               indexed: false,
-              internalType: "uint256",
-              name: "amount",
-              type: "uint256",
+              internalType: 'uint256',
+              name: 'amount',
+              type: 'uint256',
             },
             {
               indexed: false,
-              internalType: "uint256",
-              name: "fee",
-              type: "uint256",
+              internalType: 'uint256',
+              name: 'fee',
+              type: 'uint256',
             },
             {
               indexed: false,
-              internalType: "address",
-              name: "btc_address",
-              type: "address",
+              internalType: 'address',
+              name: 'btc_address',
+              type: 'address',
             },
           ],
           log.data,
-          log.topics.slice(1)
+          log.topics.slice(1),
         );
-      } catch (e) {}
+      } catch (error) {
+        console.log('### error', error);
+      }
     });
 
     return decoded;
   };
 
   getRedeemDetails = async (txHash: string): Promise<RedeemDetails | void> => {
-    const receipt = await this.hmy.blockchain.getTransactionReceipt({txnHash: txHash});
+    const receipt = await this.hmy.blockchain.getTransactionReceipt({
+      txnHash: txHash,
+    });
 
     let decoded: any;
 
@@ -243,59 +262,61 @@ export class HmyMethods implements IContractMethods {
           [
             {
               indexed: true,
-              internalType: "uint256",
-              name: "redeem_id",
-              type: "uint256",
+              internalType: 'uint256',
+              name: 'redeem_id',
+              type: 'uint256',
             },
             {
               indexed: true,
-              internalType: "address",
-              name: "requester",
-              type: "address",
+              internalType: 'address',
+              name: 'requester',
+              type: 'address',
             },
             {
               indexed: true,
-              internalType: "address",
-              name: "vault_id",
-              type: "address",
+              internalType: 'address',
+              name: 'vault_id',
+              type: 'address',
             },
             {
               indexed: false,
-              internalType: "uint256",
-              name: "amount",
-              type: "uint256",
+              internalType: 'uint256',
+              name: 'amount',
+              type: 'uint256',
             },
             {
               indexed: false,
-              internalType: "uint256",
-              name: "fee",
-              type: "uint256",
+              internalType: 'uint256',
+              name: 'fee',
+              type: 'uint256',
             },
             {
               indexed: false,
-              internalType: "address",
-              name: "btc_address",
-              type: "address",
+              internalType: 'address',
+              name: 'btc_address',
+              type: 'address',
             },
           ],
           log.data,
-          log.topics.slice(1)
+          log.topics.slice(1),
         );
-      } catch (e) {}
+      } catch (error) {
+        console.log('### error', error);
+      }
     });
 
-    return decoded
-  }
+    return decoded;
+  };
 
   getIssueId = async (requesterAddress: string) => {
-    const addressHex = this._prepareAddress(requesterAddress)
+    const addressHex = this._prepareAddress(requesterAddress);
     return await this.contract.methods.getIssueId(addressHex).call();
   };
 
   register_vault = async (
     x: string,
     y: string,
-    sendTxCallback?: SendTxCallback
+    sendTxCallback?: SendTxCallback,
   ) => {
     const senderAddress = await this.getSenderAddress();
     return await this.contract.methods
@@ -304,13 +325,14 @@ export class HmyMethods implements IContractMethods {
         from: senderAddress,
         gasLimit: this.options.gasLimit,
         gasPrice: this.options.gasPrice,
-      }).on('transactionHash', sendTxCallback);
+      })
+      .on('transactionHash', sendTxCallback);
   };
 
   requestIssue = async (
     amount: number,
     address: string,
-    sendTxCallback?: SendTxCallback
+    sendTxCallback?: SendTxCallback,
   ) => {
     const addressHex = this._prepareAddress(address);
     const senderAddress = await this.getSenderAddress();
@@ -322,20 +344,29 @@ export class HmyMethods implements IContractMethods {
         gasLimit: this.options.gasLimit,
         gasPrice: this.options.gasPrice,
         value: utils.toBN(amount),
-      }).on('transactionHash', sendTxCallback);
+      })
+      .on('transactionHash', sendTxCallback);
   };
 
-  requestRedeem = async (amountOneBtc: number, btcAddress: string, vaultId: string, sendTxCallback?: SendTxCallback) => {
+  requestRedeem = async (
+    amountOneBtc: number,
+    btcAddress: string,
+    vaultId: string,
+    sendTxCallback?: SendTxCallback,
+  ) => {
     const _amountOneBtcBN = utils.toBN(amountOneBtc);
     const addressHex = this._prepareAddress(vaultId);
 
     const senderAddress = await this.getSenderAddress();
-    return this.contract.methods.requestRedeem(_amountOneBtcBN, btcAddress, addressHex).send({
-      from: senderAddress,
-      gasLimit: this.options.gasLimit,
-      gasPrice: this.options.gasPrice,
-    }).on('transactionHash', sendTxCallback);
-  }
+    return this.contract.methods
+      .requestRedeem(_amountOneBtcBN, btcAddress, addressHex)
+      .send({
+        from: senderAddress,
+        gasLimit: this.options.gasLimit,
+        gasPrice: this.options.gasPrice,
+      })
+      .on('transactionHash', sendTxCallback);
+  };
 
   setUseMathWallet(value: boolean): boolean {
     return value;
@@ -349,22 +380,32 @@ export class HmyMethods implements IContractMethods {
     return value;
   }
 
-  transfer = async (recipient: string, amount: number, sendTxCallback?: (hash: string) => void) => {
+  transfer = async (
+    recipient: string,
+    amount: number,
+    sendTxCallback?: (hash: string) => void,
+  ) => {
     const amountBN = utils.toBN(amount);
     const addressHex = this._prepareAddress(recipient);
-    const senderAddress = await this.getSenderAddress()
-    return this.contract.methods.transfer(addressHex, amountBN).send({
-      from: senderAddress,
-      gasLimit: this.options.gasLimit,
-      gasPrice: this.options.gasPrice,
-      waitConfirm: true,
-    }).on('transactionHash', sendTxCallback)
+    const senderAddress = await this.getSenderAddress();
+
+    return this.contract.methods
+      .transfer(addressHex, amountBN)
+      .send({
+        from: senderAddress,
+        gasLimit: this.options.gasLimit,
+        gasPrice: this.options.gasPrice,
+        waitConfirm: true,
+      })
+      .on('transactionHash', sendTxCallback)
       .on('receipt', (receipt: any) => {
         console.log('### receipt', receipt);
-      }).on('error', (err: any) => {
+      })
+      .on('error', (err: any) => {
         console.log('### err', err);
-      }).then((result: any) => {
-      return result.transaction.receipt;
-    })
-  }
+      })
+      .then((result: any) => {
+        return result.transaction.receipt;
+      });
+  };
 }
