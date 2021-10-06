@@ -1,44 +1,49 @@
-import Web3 from "web3";
-import { Contract } from "web3-eth-contract";
-import { getAddress } from "@harmony-js/crypto";
-import ENS from "@ensdomains/ensjs";
-import { OneBtc } from "../out/OneBtc";
-const BN = require("bn.js");
-const utils = require("web3-utils");
-// const { hash } = require("eth-ens-namehash");
+import Web3 from 'web3';
+import { Contract } from 'web3-eth-contract';
+import { getAddress } from '@harmony-js/crypto';
+import { OneBtc } from '../out/OneBtc';
+import IContractMethods, {
+  IssueDetails,
+  RedeemDetails,
+  RedeemStatus,
+  SendTxCallback,
+} from './types';
+import { loadBlockByHeight, loadBtcTx, loadMerkleProof } from './bitcoin';
+import { Transaction } from 'bitcoinjs-lib';
+import utils from 'web3-utils';
 
 interface IHmyMethodsInitParams {
   web3: Web3;
+
   contractAddress: string;
   nodeURL: string;
   options?: { gasPrice: number; gasLimit: number };
 }
 
-export class HmyMethodsWeb3 {
-  public web3: Web3;
-  public ens: typeof ENS;
+const emptyFunction = () => {};
 
-  public oneBTCContract: Contract;
+export class HmyMethodsWeb3 implements IContractMethods {
+  public web3: Web3;
+
+  public contract: Contract;
 
   public contractAddress: string;
-  public nodeURL: string;
-  // private options = { gasPrice: 1000000000, gasLimit: 6721900 };
+  private options = { gasPrice: 1000000000, gasLimit: 6721900 };
   public useMetamask = false;
 
   constructor(params: IHmyMethodsInitParams) {
     this.web3 = params.web3;
     this.contractAddress = params.contractAddress;
-    this.nodeURL = params.nodeURL;
 
-    // if (params.options) {
-    //   this.options = params.options;
-    // }
+    if (params.options) {
+      this.options = params.options;
+    }
   }
 
   init = async () => {
-    this.oneBTCContract = new this.web3.eth.Contract(
+    this.contract = new this.web3.eth.Contract(
       OneBtc.abi,
-      this.contractAddress
+      this.contractAddress,
     );
   };
 
@@ -47,137 +52,205 @@ export class HmyMethodsWeb3 {
 
   setUseMetamask = (value: boolean) => (this.useMetamask = value);
 
-  requestIssue = async (
-    amount: number,
-    address: string,
-    sendTxCallback?: (hash: string) => void
-  ) => {
-    let accounts;
+  getSenderAddress = async (): Promise<string> => {
     if (this.useMetamask) {
-      // @ts-ignore
-      accounts = await ethereum.enable();
+      // @ts-expect-error TS2304: Cannot find name 'ethereum'.
+      const accounts = await ethereum.enable();
+      return accounts[0];
     }
 
-    const addressHex = getAddress(address).checksum;
+    return this.web3.eth.defaultAccount;
+  };
 
-    const account = this.useMetamask
-      ? accounts[0]
-      : this.web3.eth.defaultAccount;
+  private _prepareAddress(address: string) {
+    return getAddress(address).checksum;
+  }
 
-    console.log(addressHex, amount, account);
+  requestIssue = async (
+    amount: number,
+    requesterAddress: string,
+    sendTxCallback?: (hash: string) => void,
+  ) => {
+    const addressHex = this._prepareAddress(requesterAddress);
+    const senderAddress = await this.getSenderAddress();
 
-    const GAS_PRICE = 10000000000;
-
-    return await this.oneBTCContract.methods
+    return await this.contract.methods
       .requestIssue(utils.toBN(amount), addressHex)
       .send({
-        from: account,
-        gasLimit: 67219000,
-        gasPrice: GAS_PRICE,
+        from: senderAddress,
+        gasLimit: this.options.gasLimit,
+        gasPrice: this.options.gasPrice,
         value: utils.toBN(amount),
-      });
+      })
+      .on('transactionHash', sendTxCallback || emptyFunction);
   };
 
   executeIssue = async (
-    requester: string,
-    issue_id: number,
-    merkle_proof: any,
-    raw_tx: any,
-    heightAndIndex: any,
-    header: any,
-    sendTxCallback?: (hash: string) => void
+    requesterAddress: string,
+    issueId: string,
+    btcTxHash: string,
+    sendTxCallback?: (hash: string) => void,
   ) => {
-    let accounts;
-    if (this.useMetamask) {
-      // @ts-ignore
-      accounts = await ethereum.enable();
-    }
+    const addressHex = this._prepareAddress(requesterAddress);
 
-    const addressHex = getAddress(requester).checksum;
+    const btcTx = await loadBtcTx(btcTxHash);
+    const { height, index, hash, hex } = btcTx;
+    const txBlock = await loadBlockByHeight(height);
+    const proof = await loadMerkleProof(hash, height);
 
-    const account = this.useMetamask
-      ? accounts[0]
-      : this.web3.eth.defaultAccount;
+    const tx = Transaction.fromHex(hex);
+    // @ts-expect-error TS2341: Property '__toBuffer' is private and only accessible within class 'Transaction'.
+    const hexForTxId = tx.__toBuffer().toString('hex');
 
-    return await this.oneBTCContract.methods
+    const senderAddress = await this.getSenderAddress();
+
+    return await this.contract.methods
       .executeIssue(
         addressHex,
-        utils.toBN(issue_id),
-        merkle_proof,
-        raw_tx,
-        utils.toBN(heightAndIndex),
-        header
+        utils.toBN(issueId),
+        '0x' + proof,
+        '0x' + hexForTxId,
+        height,
+        index,
+        '0x' + txBlock.toHex(),
       )
       .send({
-        from: account,
-        gasLimit: 6721900,
-        gasPrice: new BN(await this.web3.eth.getGasPrice()).mul(new BN(1)),
-      });
+        from: senderAddress,
+        gasLimit: this.options.gasLimit,
+        gasPrice: this.options.gasPrice,
+      })
+      .on('transactionHash', sendTxCallback);
   };
 
   cancelIssue = async (
-    requester: string,
-    issue_id: number,
-    sendTxCallback?: (hash: string) => void
+    requesterAddress: string,
+    issueId: number,
+    sendTxCallback?: (hash: string) => void,
   ) => {
-    let accounts;
-    if (this.useMetamask) {
-      // @ts-ignore
-      accounts = await ethereum.enable();
-    }
+    const addressHex = this._prepareAddress(requesterAddress);
+    const senderAddress = await this.getSenderAddress();
 
-    const addressHex = getAddress(requester).checksum;
-
-    const account = this.useMetamask
-      ? accounts[0]
-      : this.web3.eth.defaultAccount;
-
-    return await this.oneBTCContract.methods
-      .cancelIssue(addressHex, utils.toBN(issue_id))
+    return await this.contract.methods
+      .cancelIssue(addressHex, utils.toBN(issueId))
       .send({
-        from: account,
-        gasLimit: 6721900,
-        gasPrice: new BN(await this.web3.eth.getGasPrice()).mul(new BN(1)),
-      });
+        from: senderAddress,
+        gasLimit: this.options.gasLimit,
+        gasPrice: this.options.gasPrice,
+      })
+      .on('transactionHash', sendTxCallback || emptyFunction);
   };
 
-  getIssueId = async (requester: string) => {
-    const addressHex = getAddress(requester).checksum;
+  getIssueId = async (requesterAddress: string) => {
+    const addressHex = this._prepareAddress(requesterAddress);
 
-    return await this.oneBTCContract.methods.getIssueId(addressHex).call();
+    return await this.contract.methods.getIssueId(addressHex).call();
   };
 
-  balanceOf = async (requester: string) => {
-    const addressHex = getAddress(requester).checksum;
+  transfer = async (
+    recipient: string,
+    amount: number,
+    sendTxCallback?: (hash: string) => void,
+  ) => {
+    const addressHex = this._prepareAddress(recipient);
+    const amountBN = utils.toBN(amount);
+    const senderAddress = await this.getSenderAddress();
+    return this.contract.methods
+      .transfer(addressHex, amountBN)
+      .send({
+        from: senderAddress,
+        gasLimit: this.options.gasLimit,
+        gasPrice: this.options.gasPrice,
+      })
+      .on('transactionHash', sendTxCallback || emptyFunction);
+  };
 
-    return await this.oneBTCContract.methods.balanceOf(addressHex).call();
+  requestRedeem = async (
+    amountOneBtc: number,
+    btcAddress: string,
+    vaultId: string,
+    sendTxCallback?: SendTxCallback,
+  ) => {
+    const amountBN = utils.toBN(amountOneBtc);
+    const addressHex = this._prepareAddress(vaultId);
+    const senderAddress = await this.getSenderAddress();
+
+    return this.contract.methods
+      .requestRedeem(amountBN, btcAddress, addressHex)
+      .send({
+        from: senderAddress,
+        gasLimit: this.options.gasLimit,
+        gasPrice: this.options.gasPrice,
+      })
+      .on('transactionHash', sendTxCallback || emptyFunction);
+  };
+
+  executeRedeem = async (
+    requesterAddress: string,
+    redeemId: number,
+    btcTxHash: string,
+    sendTxCallback?: SendTxCallback,
+  ) => {
+    const btcTx = await loadBtcTx(btcTxHash);
+    const { height, index, hash, hex } = btcTx;
+    const txBlock = await loadBlockByHeight(height);
+    const proof = await loadMerkleProof(hash, height);
+
+    const tx = Transaction.fromHex(hex);
+    // @ts-expect-error Property '__toBuffer' is private and only accessible within class 'Transaction'.
+    const hexForTxId = tx.__toBuffer().toString('hex');
+
+    const addressHex = this._prepareAddress(requesterAddress);
+    const senderAddress = await this.getSenderAddress();
+
+    return await this.contract.methods
+      .executeRedeem(
+        addressHex,
+        utils.toBN(redeemId),
+        '0x' + proof,
+        '0x' + hexForTxId,
+        height,
+        index,
+        '0x' + txBlock.toHex(),
+      )
+      .send({
+        from: senderAddress,
+        gasLimit: this.options.gasLimit,
+        gasPrice: this.options.gasPrice,
+      })
+      .on('transactionHash', sendTxCallback);
+  };
+
+  getRedeemStatus(
+    requesterAddress: string,
+    redeemId: string,
+  ): Promise<RedeemStatus> {
+    const addressHex = this._prepareAddress(requesterAddress);
+    return this.contract.methods.getRedeemStatus(addressHex, redeemId).call();
+  }
+
+  balanceOf = (requesterAddress: string) => {
+    const addressHex = this._prepareAddress(requesterAddress);
+    return this.contract.methods.balanceOf(addressHex).call();
   };
 
   register_vault = async (
     x: string,
     y: string,
-    sendTxCallback?: (hash: string) => void
+    sendTxCallback?: SendTxCallback,
   ) => {
-    let accounts;
-    if (this.useMetamask) {
-      // @ts-ignore
-      accounts = await ethereum.enable();
-    }
+    const senderAddress = await this.getSenderAddress();
 
-    const account = this.useMetamask
-      ? accounts[0]
-      : this.web3.eth.defaultAccount;
-
-    return await this.oneBTCContract.methods
+    return await this.contract.methods
       .registerVault(utils.toBN(x), utils.toBN(y))
       .send({
-        from: account,
-        gasLimit: 6721900,
-        gasPrice: new BN(await this.web3.eth.getGasPrice()).mul(new BN(1)),
-      });
+        from: senderAddress,
+        gasLimit: this.options.gasLimit,
+        gasPrice: this.options.gasPrice,
+      })
+      .on('transactionHash', sendTxCallback);
   };
 
-  getIssueDetails = async (txHash: string) => {
+  getIssueDetails = async (txHash: string): Promise<IssueDetails | void> => {
     const receipt = await this.web3.eth.getTransactionReceipt(txHash);
 
     let decoded: any;
@@ -188,45 +261,109 @@ export class HmyMethodsWeb3 {
           [
             {
               indexed: true,
-              internalType: "uint256",
-              name: "issue_id",
-              type: "uint256",
+              internalType: 'uint256',
+              name: 'issue_id',
+              type: 'uint256',
             },
             {
               indexed: true,
-              internalType: "address",
-              name: "requester",
-              type: "address",
+              internalType: 'address',
+              name: 'requester',
+              type: 'address',
             },
             {
               indexed: true,
-              internalType: "address",
-              name: "vault_id",
-              type: "address",
+              internalType: 'address',
+              name: 'vault_id',
+              type: 'address',
             },
             {
               indexed: false,
-              internalType: "uint256",
-              name: "amount",
-              type: "uint256",
+              internalType: 'uint256',
+              name: 'amount',
+              type: 'uint256',
             },
             {
               indexed: false,
-              internalType: "uint256",
-              name: "fee",
-              type: "uint256",
+              internalType: 'uint256',
+              name: 'fee',
+              type: 'uint256',
             },
             {
               indexed: false,
-              internalType: "address",
-              name: "btc_address",
-              type: "address",
+              internalType: 'address',
+              name: 'btc_address',
+              type: 'address',
             },
           ],
           log.data,
-          log.topics.slice(1)
+          log.topics.slice(1),
         );
-      } catch (e) {}
+      } catch (error) {
+        console.log('### error', error);
+      }
+    });
+
+    return decoded;
+  };
+
+  getIssueStatus = (requesterAddress: string, issueId: string) => {
+    const addressHex = this._prepareAddress(requesterAddress);
+    return this.contract.methods.getIssueStatus(addressHex, issueId).call();
+  };
+
+  getRedeemDetails = async (txHash: string): Promise<RedeemDetails | void> => {
+    const receipt = await this.web3.eth.getTransactionReceipt(txHash);
+
+    let decoded: any;
+
+    receipt.logs.forEach(async (log: any) => {
+      try {
+        decoded = this.web3.eth.abi.decodeLog(
+          [
+            {
+              indexed: true,
+              internalType: 'uint256',
+              name: 'redeem_id',
+              type: 'uint256',
+            },
+            {
+              indexed: true,
+              internalType: 'address',
+              name: 'requester',
+              type: 'address',
+            },
+            {
+              indexed: true,
+              internalType: 'address',
+              name: 'vault_id',
+              type: 'address',
+            },
+            {
+              indexed: false,
+              internalType: 'uint256',
+              name: 'amount',
+              type: 'uint256',
+            },
+            {
+              indexed: false,
+              internalType: 'uint256',
+              name: 'fee',
+              type: 'uint256',
+            },
+            {
+              indexed: false,
+              internalType: 'address',
+              name: 'btc_address',
+              type: 'address',
+            },
+          ],
+          log.data,
+          log.topics.slice(1),
+        );
+      } catch (error) {
+        console.log('### error', error);
+      }
     });
 
     return decoded;

@@ -6,7 +6,7 @@ export type TConnectToOneWallet = (
   hmy: Harmony,
   wallet: Wallet | any,
   addr: string,
-  reject: (reason: string) => void
+  reject: (reason: string) => void,
 ) => Promise<any>;
 
 export const connectToBrowserWallet: TConnectToOneWallet = async (
@@ -14,12 +14,12 @@ export const connectToBrowserWallet: TConnectToOneWallet = async (
   hmy,
   wallet,
   addrHex,
-  reject
+  reject,
 ) => {
   let userAddress = addrHex;
 
   if (!userAddress) {
-    let { address } = await walletExtension.getAccount();
+    const { address } = await walletExtension.getAccount();
 
     userAddress = hmy.crypto.getAddress(address).checksum;
   }
