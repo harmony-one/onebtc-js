@@ -316,15 +316,37 @@ export class HmyMethodsWeb3 implements IContractMethods {
     return this.contract.methods.getIssueStatus(addressHex, issueId).call();
   };
 
-  lockAdditionalCollateral = async (amount: number) => {
+  lockAdditionalCollateral = async (
+    amount: number,
+    sendTxCallback: SendTxCallback,
+  ) => {
     const senderAddress = await this.getSenderAddress();
 
-    return this.contract.methods.lockAdditionalCollateral().send({
-      value: utils.toBN(amount),
-      from: senderAddress,
-      gasLimit: this.options.gasLimit,
-      gasPrice: this.options.gasPrice,
-    });
+    return this.contract.methods
+      .lockAdditionalCollateral()
+      .send({
+        value: utils.toBN(amount),
+        from: senderAddress,
+        gasLimit: this.options.gasLimit,
+        gasPrice: this.options.gasPrice,
+      })
+      .on('transactionHash', sendTxCallback);
+  };
+
+  withdrawCollateral = async (
+    amount: number,
+    sendTxCallback: SendTxCallback,
+  ) => {
+    const senderAddress = await this.getSenderAddress();
+
+    return this.contract.methods
+      .withdrawCollateral(utils.toBN(amount))
+      .send({
+        from: senderAddress,
+        gasLimit: this.options.gasLimit,
+        gasPrice: this.options.gasPrice,
+      })
+      .on('transactionHash', sendTxCallback);
   };
 
   getRedeemDetails = async (txHash: string): Promise<RedeemDetails | void> => {

@@ -99,6 +99,15 @@ export default interface IContractMethods {
     sendTxCallback?: SendTxCallback,
   ): Promise<any>;
 
+  lockAdditionalCollateral(
+    amount: number,
+    sendTxCallback: SendTxCallback,
+  ): Promise<any>;
+  withdrawCollateral(
+    amount: number,
+    sendTxCallback: SendTxCallback,
+  ): Promise<any>;
+
   getIssueDetails(txHash: string): Promise<IssueDetails | void>;
   getRedeemDetails(txHash: string): Promise<RedeemDetails | void>;
 }
