@@ -6,7 +6,7 @@ export const getTxsByAddress = async (
 ) => {
   try {
     const response = await axios.get(
-      `&{btcNodeUrl}/tx/address/${bech32Address}`,
+      `${btcNodeUrl}/tx/address/${bech32Address}`,
     );
 
     return response.data;

@@ -6,23 +6,25 @@ const test = async () => {
     btcNodeUrl: 'https://btc2.test.hmny.io',
   });
 
-  console.log(
-    'getIssues by Vault: ',
-    dApi.getIssues({
-      page: 0,
-      size: 10,
-      vault: '0xAc7d2f7c00a55859A3c0041e6f613552C16c0aAb',
-    }),
-  );
+  // console.log(
+  //   'getIssues by Vault: ',
+  //   await dApi.getIssues({
+  //     page: 0,
+  //     size: 10,
+  //     vault: '0xAc7d2f7c00a55859A3c0041e6f613552C16c0aAb',
+  //   }),
+  // );
 
   console.log(
     'get Vault outputs: ',
-    dApi.getVaultFreeOutputs('0xAc7d2f7c00a55859A3c0041e6f613552C16c0aAb'),
+    await dApi.getVaultFreeOutputs(
+      '0xAc7d2f7c00a55859A3c0041e6f613552C16c0aAb',
+    ),
   );
 
   console.log(
     'get Vault balances: ',
-    dApi.getVaultBalances('0xAc7d2f7c00a55859A3c0041e6f613552C16c0aAb'),
+    await dApi.getVaultBalances('0xAc7d2f7c00a55859A3c0041e6f613552C16c0aAb'),
   );
 };
 

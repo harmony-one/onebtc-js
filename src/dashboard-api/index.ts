@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { Buffer } from 'buffer';
-import bitcoin from 'bitcoinjs-lib';
+import * as bitcoin from 'bitcoinjs-lib';
 import { IssueRequest } from './interfaces';
 import { getActualOutputs } from './helpers';
 import { getTxsByAddress } from './bitcoinApi';
@@ -49,11 +49,15 @@ export class DashboardApi {
     this.btcNodeUrl = params.btcNodeUrl;
   }
 
-  getData = (
+  getData = async (
     dataType: DATA_TYPE,
     params: IGetParams,
   ): Promise<IResponse<any>> => {
-    return axios.get(`${this.dashboardUrl}/${dataType}/data`, { params });
+    const res = await axios.get(`${this.dashboardUrl}/${dataType}/data`, {
+      params,
+    });
+
+    return res.data;
   };
 
   getIssues = (params: IGetParams) => {
