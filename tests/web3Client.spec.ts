@@ -12,6 +12,7 @@ describe('web3Client', function () {
     web3Client = await getHmyClient({
       sdk: 'web3',
       nodeURL: 'https://api.s0.b.hmny.io',
+      btcNodeUrl: 'https://btc2.test.hmny.io',
       chainId: 2,
       contractAddress: '0x4A96FdAeA8Fd6064B1efC56753d01B866Ff14883',
       gasLimit: 6721900,
