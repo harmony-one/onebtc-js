@@ -4,6 +4,7 @@ import { ChainType } from '@harmony-js/utils';
 import { HmyMethods } from './HmyMethods';
 import { HmyMethodsWeb3 } from './HmyMethodsWeb3';
 import IContractMethods from './types';
+import { BTCNodeClient } from './btcNodeClient';
 
 export interface IHmyClient {
   methods: IContractMethods;
@@ -17,6 +18,7 @@ export interface IHmyClientParams {
   sdk?: 'harmony' | 'web3';
   nodeURL: string;
   chainId: number;
+  btcNodeUrl: string;
   contractAddress: string;
   gasLimit?: number;
   gasPrice?: number;
@@ -33,6 +35,8 @@ export const getHmyClient = async (
       chainId: Number(params.chainId),
     },
   );
+
+  const btcNodeClient = new BTCNodeClient(params.btcNodeUrl);
 
   // const hmyUserAccount = params.privateKey
   //   ? hmy.wallet.addByPrivateKey(params.privateKey)
@@ -58,6 +62,7 @@ export const getHmyClient = async (
       web3,
       contractAddress: params.contractAddress,
       nodeURL: params.nodeURL,
+      btcNodeClient,
     });
 
     await methods.init();
@@ -67,6 +72,7 @@ export const getHmyClient = async (
       web3,
       contractAddress: params.contractAddress,
       nodeURL: params.nodeURL,
+      btcNodeClient,
     });
 
     await methods.init();

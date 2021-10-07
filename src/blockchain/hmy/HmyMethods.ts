@@ -10,13 +10,14 @@ import IContractMethods, {
 } from './types';
 import { getAddress } from '@harmony-js/crypto';
 import Web3 from 'web3';
-import { loadBlockByHeight, loadBtcTx, loadMerkleProof } from './bitcoin';
+import { BTCNodeClient } from './btcNodeClient';
 import { Transaction } from 'bitcoinjs-lib';
 import utils from 'web3-utils';
 
 interface IHmyMethodsInitParams {
   hmy: Harmony;
   web3: Web3;
+  btcNodeClient: BTCNodeClient;
   contractAddress: string;
   nodeURL: string;
   options?: { gasPrice: number; gasLimit: number };
@@ -27,6 +28,7 @@ export class HmyMethods implements IContractMethods {
   public web3: Web3;
   public contractAddress: string;
 
+  public btcNodeClient: BTCNodeClient;
   public nodeURL: string;
   public contract: Contract;
 
@@ -38,6 +40,7 @@ export class HmyMethods implements IContractMethods {
     this.web3 = params.web3;
     this.contractAddress = params.contractAddress;
     this.nodeURL = params.nodeURL;
+    this.btcNodeClient = params.btcNodeClient;
 
     if (params.options) {
       this.options = {
@@ -123,10 +126,10 @@ export class HmyMethods implements IContractMethods {
     btcTxHash: string,
     sendTxCallback?: SendTxCallback,
   ) => {
-    const btcTx = await loadBtcTx(btcTxHash);
+    const btcTx = await this.btcNodeClient.loadBtcTx(btcTxHash);
     const { height, index, hash, hex } = btcTx;
-    const txBlock = await loadBlockByHeight(height);
-    const proof = await loadMerkleProof(hash, height);
+    const txBlock = await this.btcNodeClient.loadBlockByHeight(height);
+    const proof = await this.btcNodeClient.loadMerkleProof(hash, height);
 
     const tx = Transaction.fromHex(hex);
     // @ts-expect-error TS2341: Property '__toBuffer' is private and only accessible within class 'Transaction'.
@@ -162,10 +165,10 @@ export class HmyMethods implements IContractMethods {
   ) => {
     const addressHex = this._prepareAddress(requesterAddress);
 
-    const btcTx = await loadBtcTx(btcTxHash);
+    const btcTx = await this.btcNodeClient.loadBtcTx(btcTxHash);
     const { height, index, hash, hex } = btcTx;
-    const txBlock = await loadBlockByHeight(height);
-    const proof = await loadMerkleProof(hash, height);
+    const txBlock = await this.btcNodeClient.loadBlockByHeight(height);
+    const proof = await this.btcNodeClient.loadMerkleProof(hash, height);
 
     const tx = Transaction.fromHex(hex);
     // @ts-expect-error TS2341: Property '__toBuffer' is private and only accessible within class 'Transaction'.

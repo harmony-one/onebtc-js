@@ -1,3 +1,5 @@
+import { BTCNodeClient } from './btcNodeClient';
+
 export type SendTxCallback = (txHash: string) => void;
 
 export interface RedeemDetails {
@@ -44,6 +46,7 @@ export interface TransactionReceipt {
 
 export default interface IContractMethods {
   // web3: Web3;
+  btcNodeClient: BTCNodeClient;
   init(): Promise<void>;
   setUseOneWallet(value: boolean): boolean;
   setUseMathWallet(value: boolean): boolean;

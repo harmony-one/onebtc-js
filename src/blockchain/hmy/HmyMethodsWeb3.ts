@@ -8,7 +8,7 @@ import IContractMethods, {
   RedeemStatus,
   SendTxCallback,
 } from './types';
-import { loadBlockByHeight, loadBtcTx, loadMerkleProof } from './bitcoin';
+import { BTCNodeClient } from './btcNodeClient';
 import { Transaction } from 'bitcoinjs-lib';
 import utils from 'web3-utils';
 
@@ -17,6 +17,7 @@ interface IHmyMethodsInitParams {
 
   contractAddress: string;
   nodeURL: string;
+  btcNodeClient: BTCNodeClient;
   options?: { gasPrice: number; gasLimit: number };
 }
 
@@ -26,6 +27,7 @@ export class HmyMethodsWeb3 implements IContractMethods {
   public web3: Web3;
 
   public contract: Contract;
+  public btcNodeClient: BTCNodeClient;
 
   public contractAddress: string;
   private options = { gasPrice: 1000000000, gasLimit: 6721900 };
@@ -34,6 +36,8 @@ export class HmyMethodsWeb3 implements IContractMethods {
   constructor(params: IHmyMethodsInitParams) {
     this.web3 = params.web3;
     this.contractAddress = params.contractAddress;
+
+    this.btcNodeClient = params.btcNodeClient;
 
     if (params.options) {
       this.options = params.options;
@@ -93,10 +97,10 @@ export class HmyMethodsWeb3 implements IContractMethods {
   ) => {
     const addressHex = this._prepareAddress(requesterAddress);
 
-    const btcTx = await loadBtcTx(btcTxHash);
+    const btcTx = await this.btcNodeClient.loadBtcTx(btcTxHash);
     const { height, index, hash, hex } = btcTx;
-    const txBlock = await loadBlockByHeight(height);
-    const proof = await loadMerkleProof(hash, height);
+    const txBlock = await this.btcNodeClient.loadBlockByHeight(height);
+    const proof = await this.btcNodeClient.loadMerkleProof(hash, height);
 
     const tx = Transaction.fromHex(hex);
     // @ts-expect-error TS2341: Property '__toBuffer' is private and only accessible within class 'Transaction'.
@@ -190,10 +194,10 @@ export class HmyMethodsWeb3 implements IContractMethods {
     btcTxHash: string,
     sendTxCallback?: SendTxCallback,
   ) => {
-    const btcTx = await loadBtcTx(btcTxHash);
+    const btcTx = await this.btcNodeClient.loadBtcTx(btcTxHash);
     const { height, index, hash, hex } = btcTx;
-    const txBlock = await loadBlockByHeight(height);
-    const proof = await loadMerkleProof(hash, height);
+    const txBlock = await this.btcNodeClient.loadBlockByHeight(height);
+    const proof = await this.btcNodeClient.loadMerkleProof(hash, height);
 
     const tx = Transaction.fromHex(hex);
     // @ts-expect-error Property '__toBuffer' is private and only accessible within class 'Transaction'.
@@ -300,7 +304,7 @@ export class HmyMethodsWeb3 implements IContractMethods {
           log.topics.slice(1),
         );
       } catch (error) {
-        console.log('### error', error);
+        console.log('### decode issue error', error);
       }
     });
 
@@ -310,6 +314,17 @@ export class HmyMethodsWeb3 implements IContractMethods {
   getIssueStatus = (requesterAddress: string, issueId: string) => {
     const addressHex = this._prepareAddress(requesterAddress);
     return this.contract.methods.getIssueStatus(addressHex, issueId).call();
+  };
+
+  lockAdditionalCollateral = async (amount: number) => {
+    const senderAddress = await this.getSenderAddress();
+
+    return this.contract.methods.lockAdditionalCollateral().send({
+      value: utils.toBN(amount),
+      from: senderAddress,
+      gasLimit: this.options.gasLimit,
+      gasPrice: this.options.gasPrice,
+    });
   };
 
   getRedeemDetails = async (txHash: string): Promise<RedeemDetails | void> => {
@@ -362,7 +377,7 @@ export class HmyMethodsWeb3 implements IContractMethods {
           log.topics.slice(1),
         );
       } catch (error) {
-        console.log('### error', error);
+        console.log('### decode redeem error', error);
       }
     });
 
