@@ -4,7 +4,7 @@ import { ChainType } from '@harmony-js/utils';
 import { HmyMethods } from './HmyMethods';
 import { HmyMethodsWeb3 } from './HmyMethodsWeb3';
 import IContractMethods from './types';
-import { BTCNodeClient } from './btcNodeClient';
+import { BTCNodeClient } from '../../btcNode';
 
 export interface IHmyClient {
   methods: IContractMethods;

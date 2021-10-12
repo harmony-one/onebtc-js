@@ -24,7 +24,7 @@ const test = async () => {
 
   console.log(
     'get Vault balances: ',
-    await dApi.getVaultBalances('0xAc7d2f7c00a55859A3c0041e6f613552C16c0aAb'),
+    await dApi.loadVaultBalances('0xAc7d2f7c00a55859A3c0041e6f613552C16c0aAb'),
   );
 };
 

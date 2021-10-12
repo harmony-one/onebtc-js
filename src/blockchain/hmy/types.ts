@@ -1,4 +1,4 @@
-import { BTCNodeClient } from './btcNodeClient';
+import { BTCNodeClient } from '../../btcNode';
 
 export type SendTxCallback = (txHash: string) => void;
 

@@ -1,9 +1,16 @@
 import axios from 'axios';
 import { Buffer } from 'buffer';
 import * as bitcoin from 'bitcoinjs-lib';
-import { IssueRequest } from './interfaces';
+import {
+  IBtcRelayInfo,
+  IEvent,
+  IIssue,
+  IListContainer,
+  IRedeem,
+  IVault,
+} from './interfaces';
 import { getActualOutputs } from './helpers';
-import { getTxsByAddress } from './bitcoinApi';
+import { BTCNodeClient } from '../btcNode';
 
 export interface IDashboardApi {
   dashboardUrl: string;
@@ -27,32 +34,29 @@ interface IFreeOutput {
   bech32Address: string;
 }
 
-interface IResponse<T> {
-  content: T[];
-  size: number;
-  page: number;
-  total: number;
-}
-
 enum DATA_TYPE {
   ISSUES = 'issues',
   REDEEMS = 'redeems',
   VAULTS = 'vaults',
+  EVENTS = 'relay/events',
 }
 
 export class DashboardApi {
   dashboardUrl: string;
   btcNodeUrl: string;
+  btcNodeClient: BTCNodeClient;
 
   constructor(params: IDashboardApi) {
     this.dashboardUrl = params.dashboardUrl;
     this.btcNodeUrl = params.btcNodeUrl;
+
+    this.btcNodeClient = new BTCNodeClient(this.btcNodeUrl);
   }
 
-  getData = async (
+  loadDataList = async <T>(
     dataType: DATA_TYPE,
     params: IGetParams,
-  ): Promise<IResponse<any>> => {
+  ): Promise<IListContainer<T>> => {
     const res = await axios.get(`${this.dashboardUrl}/${dataType}/data`, {
       params,
     });
@@ -60,12 +64,47 @@ export class DashboardApi {
     return res.data;
   };
 
-  getIssues = (params: IGetParams) => {
-    return this.getData(DATA_TYPE.ISSUES, params);
+  loadData = async (dataType: DATA_TYPE, entityId: string) => {
+    const res = await axios.get(
+      `${this.dashboardUrl}/${dataType}/data/${entityId}`,
+    );
+    return res.data;
+  };
+
+  loadIssue = async (issueId: string): Promise<IIssue> => {
+    return await this.loadData(DATA_TYPE.ISSUES, issueId);
+  };
+
+  loadRedeem = async (redeemId: string): Promise<IRedeem> => {
+    return await this.loadData(DATA_TYPE.ISSUES, redeemId);
+  };
+
+  loadVault = async (vaultId: string): Promise<IVault> => {
+    return await this.loadData(DATA_TYPE.VAULTS, vaultId);
+  };
+
+  loadEvent = async (eventId: string): Promise<IEvent> => {
+    return await this.loadData(DATA_TYPE.EVENTS, eventId);
+  };
+
+  loadEventList = async (params: IGetParams) => {
+    return this.loadDataList<IEvent>(DATA_TYPE.EVENTS, params);
+  };
+
+  loadIssueList = (params: IGetParams) => {
+    return this.loadDataList<IIssue>(DATA_TYPE.ISSUES, params);
+  };
+
+  loadRedeemList = (params: IGetParams) => {
+    return this.loadDataList<IRedeem>(DATA_TYPE.REDEEMS, params);
+  };
+
+  loadVaultList = (params: IGetParams) => {
+    return this.loadDataList<IVault>(DATA_TYPE.VAULTS, params);
   };
 
   getVaultFreeOutputs = async (vault: string): Promise<IFreeOutput[]> => {
-    const issues = await this.getIssues({ page: 0, size: 500, vault });
+    const issues = await this.loadIssueList({ page: 0, size: 500, vault });
 
     const freeOutputs: IFreeOutput[] = [];
     let totalAmount = 0;
@@ -74,14 +113,14 @@ export class DashboardApi {
     const getMax = true;
 
     while ((getMax || totalAmount < amount) && i < issues.content.length) {
-      const issue: IssueRequest = issues.content[i];
+      const issue = issues.content[i];
 
       const bech32Address = bitcoin.address.toBech32(
         Buffer.from(issue.btcAddress.slice(2), 'hex'),
         0,
         'tb',
       );
-      const txs = await getTxsByAddress(this.btcNodeUrl, bech32Address);
+      const txs = await this.btcNodeClient.loadTxsByAddress(bech32Address);
       const outputs = getActualOutputs(txs, bech32Address);
 
       outputs.forEach((out) => {
@@ -101,7 +140,9 @@ export class DashboardApi {
     return freeOutputs;
   };
 
-  getVaultBalances = async (vault: string) => {
+  loadVaultBalances = async (
+    vault: string,
+  ): Promise<IListContainer<{ address: string; amount: string }>> => {
     const balances = {};
 
     const outs = await this.getVaultFreeOutputs(vault);
@@ -111,6 +152,30 @@ export class DashboardApi {
           (balances[o.bech32Address] || 0) + o.value),
     );
 
-    return balances;
+    const content = Object.keys(balances).map((key) => ({
+      address: key,
+      amount: balances[key],
+    }));
+    return {
+      size: content.length,
+      page: 0,
+      totalPages: 1,
+      content: content,
+      totalElements: content.length,
+    };
+  };
+
+  public loadInfo = async (): Promise<IBtcRelayInfo> => {
+    const res = await axios.get(this.dashboardUrl + '/relay/events/info');
+
+    return res.data;
+  };
+
+  public loadLastEvent = async (): Promise<IEvent> => {
+    const events = await this.loadEventList({
+      size: 1,
+      page: 0,
+    });
+    return events.content[0];
   };
 }

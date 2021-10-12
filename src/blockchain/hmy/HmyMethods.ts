@@ -10,7 +10,7 @@ import IContractMethods, {
 } from './types';
 import { getAddress } from '@harmony-js/crypto';
 import Web3 from 'web3';
-import { BTCNodeClient } from './btcNodeClient';
+import { BTCNodeClient } from '../../btcNode';
 import { Transaction } from 'bitcoinjs-lib';
 import utils from 'web3-utils';
 

@@ -3,6 +3,7 @@ import axios from 'axios';
 import assert from '@summa-tx/bitcoin-spv-js-clients/lib/vendor/bsert';
 import merkle from '@summa-tx/bitcoin-spv-js-clients/lib/vendor/merkle';
 import hash256 from '@summa-tx/bitcoin-spv-js-clients/lib/vendor/hash256';
+import { BTCNodeInfo, BTCTx } from './types';
 
 const reverseAndSwap = (dataP: string | number) => {
   let data = typeof dataP === 'number' ? dataP.toString(16) : dataP;
@@ -98,5 +99,39 @@ export class BTCNodeClient {
   private _loadBlockByHeight = async (height: number) => {
     const result = await axios.get(`${this.host}/block/${height}`);
     return result.data;
+  };
+
+  public loadTxsByAddress = async (bech32Address: string) => {
+    try {
+      const response = await axios.get(
+        `${this.host}/tx/address/${bech32Address}`,
+      );
+
+      return response.data;
+    } catch (e) {
+      console.error('Error getTransactionByAddress', {
+        error: e,
+        bech32Address,
+        url: this.host,
+      });
+    }
+  };
+
+  public loadWalletTxList = async (bech32Address: string): Promise<BTCTx[]> => {
+    const response = await axios.get(
+      `${this.host}/tx/address/${bech32Address}`,
+    );
+
+    return response.data;
+  };
+
+  public loadBasicInfo = async (): Promise<BTCNodeInfo> => {
+    const response = await axios.get(`${this.host}`);
+    return response.data;
+  };
+
+  public loadFee = async (): Promise<number> => {
+    const response = await axios.get(`${this.host}/fee`);
+    return response.data.rate;
   };
 }

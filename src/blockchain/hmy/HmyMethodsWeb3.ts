@@ -8,7 +8,7 @@ import IContractMethods, {
   RedeemStatus,
   SendTxCallback,
 } from './types';
-import { BTCNodeClient } from './btcNodeClient';
+import { BTCNodeClient } from '../../btcNode';
 import { Transaction } from 'bitcoinjs-lib';
 import utils from 'web3-utils';
 
