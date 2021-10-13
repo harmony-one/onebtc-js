@@ -76,7 +76,7 @@ export class DashboardApi {
   };
 
   loadRedeem = async (redeemId: string): Promise<IRedeem> => {
-    return await this.loadData(DATA_TYPE.ISSUES, redeemId);
+    return await this.loadData(DATA_TYPE.REDEEMS, redeemId);
   };
 
   loadVault = async (vaultId: string): Promise<IVault> => {
