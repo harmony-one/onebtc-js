@@ -10,7 +10,7 @@ import IContractMethods, {
 } from './types';
 import { getAddress } from '@harmony-js/crypto';
 import Web3 from 'web3';
-import { BTCNodeClient } from './btcNodeClient';
+import { BTCNodeClient } from '../../btcNode';
 import { Transaction } from 'bitcoinjs-lib';
 import utils from 'web3-utils';
 
@@ -410,5 +410,39 @@ export class HmyMethods implements IContractMethods {
       .then((result: any) => {
         return result.transaction.receipt;
       });
+  };
+
+  lockAdditionalCollateral = async (
+    amount: number,
+    sendTxCallback: SendTxCallback,
+  ) => {
+    const senderAddress = await this.getSenderAddress();
+
+    return this.contract.methods
+      .lockAdditionalCollateral()
+      .send({
+        value: utils.toBN(amount),
+        from: senderAddress,
+        gasLimit: this.options.gasLimit,
+        gasPrice: this.options.gasPrice,
+      })
+      .on('transactionHash', sendTxCallback);
+  };
+
+  withdrawCollateral = async (
+    amount: number,
+    sendTxCallback: SendTxCallback,
+  ) => {
+    const senderAddress = await this.getSenderAddress();
+
+    return this.contract.methods
+      .lockAdditionalCollateral()
+      .send({
+        value: utils.toBN(amount),
+        from: senderAddress,
+        gasLimit: this.options.gasLimit,
+        gasPrice: this.options.gasPrice,
+      })
+      .on('transactionHash', sendTxCallback);
   };
 }

@@ -1,4 +1,4 @@
-import { BTCNodeClient } from './btcNodeClient';
+import { BTCNodeClient } from '../../btcNode';
 
 export type SendTxCallback = (txHash: string) => void;
 
@@ -97,6 +97,15 @@ export default interface IContractMethods {
     x: string,
     y: string,
     sendTxCallback?: SendTxCallback,
+  ): Promise<any>;
+
+  lockAdditionalCollateral(
+    amount: number,
+    sendTxCallback: SendTxCallback,
+  ): Promise<any>;
+  withdrawCollateral(
+    amount: number,
+    sendTxCallback: SendTxCallback,
   ): Promise<any>;
 
   getIssueDetails(txHash: string): Promise<IssueDetails | void>;
