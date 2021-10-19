@@ -33,7 +33,7 @@ export class HmyMethods implements IContractMethods {
   public contract: Contract;
 
   public options = { gasPrice: 1000000000, gasLimit: 6721900 };
-  private onewallet: any;
+  private _useOneWallet = false;
 
   constructor(params: IHmyMethodsInitParams) {
     this.hmy = params.hmy;
@@ -48,8 +48,6 @@ export class HmyMethods implements IContractMethods {
         gasLimit: params.options.gasLimit,
       };
     }
-
-    this.onewallet = window.onewallet;
   }
 
   getRedeemStatus(
@@ -61,7 +59,7 @@ export class HmyMethods implements IContractMethods {
   }
 
   private _injectSignTransaction = async () => {
-    const account = await this.onewallet.getAccount();
+    const account = await window.onewallet.getAccount();
     const address = this._prepareAddress(account.address);
     this.contract.wallet.defaultSigner = address;
     this.contract.wallet.signTransaction = async (tx: any) => {
@@ -74,9 +72,22 @@ export class HmyMethods implements IContractMethods {
     return getAddress(address).checksum;
   }
 
+  private _responseHandler(response: any) {
+    if (response.status === 'rejected') {
+      throw new Error('transaction rejected');
+    }
+
+    return response.transaction.receipt;
+  }
+
   getSenderAddress = async (): Promise<string> => {
-    const account = await this.onewallet.getAccount();
-    return this._prepareAddress(account.address);
+    if (this._useOneWallet) {
+      await this._injectSignTransaction();
+      const account = await window.onewallet.getAccount();
+      return this._prepareAddress(account.address);
+    }
+
+    return '';
   };
 
   init = async () => {
@@ -84,10 +95,6 @@ export class HmyMethods implements IContractMethods {
       OneBtc.abi,
       this.contractAddress,
     );
-
-    if (this.onewallet) {
-      this._injectSignTransaction();
-    }
   };
 
   balanceOf = (requesterAddress: string): Promise<string> => {
@@ -109,7 +116,8 @@ export class HmyMethods implements IContractMethods {
         gasLimit: this.options.gasLimit,
         gasPrice: this.options.gasPrice,
       })
-      .on('transactionHash', sendTxCallback);
+      .on('transactionHash', sendTxCallback)
+      .then(this._responseHandler);
   };
 
   getIssueStatus = (
@@ -153,7 +161,8 @@ export class HmyMethods implements IContractMethods {
         gasLimit: this.options.gasLimit,
         gasPrice: this.options.gasPrice,
       })
-      .on('transactionHash', sendTxCallback);
+      .on('transactionHash', sendTxCallback)
+      .then(this._responseHandler);
   };
 
   executeRedeem = async (
@@ -190,7 +199,8 @@ export class HmyMethods implements IContractMethods {
         gasLimit: this.options.gasLimit,
         gasPrice: this.options.gasPrice,
       })
-      .on('transactionHash', sendTxCallback);
+      .on('transactionHash', sendTxCallback)
+      .then(this._responseHandler);
   };
 
   getIssueDetails = async (txHash: string): Promise<IssueDetails | void> => {
@@ -329,7 +339,8 @@ export class HmyMethods implements IContractMethods {
         gasLimit: this.options.gasLimit,
         gasPrice: this.options.gasPrice,
       })
-      .on('transactionHash', sendTxCallback);
+      .on('transactionHash', sendTxCallback)
+      .then(this._responseHandler);
   };
 
   requestIssue = async (
@@ -348,7 +359,8 @@ export class HmyMethods implements IContractMethods {
         gasPrice: this.options.gasPrice,
         value: utils.toBN(amount),
       })
-      .on('transactionHash', sendTxCallback);
+      .on('transactionHash', sendTxCallback)
+      .then(this._responseHandler);
   };
 
   requestRedeem = async (
@@ -368,7 +380,8 @@ export class HmyMethods implements IContractMethods {
         gasLimit: this.options.gasLimit,
         gasPrice: this.options.gasPrice,
       })
-      .on('transactionHash', sendTxCallback);
+      .on('transactionHash', sendTxCallback)
+      .then(this._responseHandler);
   };
 
   setUseMathWallet(value: boolean): boolean {
@@ -380,6 +393,7 @@ export class HmyMethods implements IContractMethods {
   }
 
   setUseOneWallet(value: boolean): boolean {
+    this._useOneWallet = value;
     return value;
   }
 
@@ -407,9 +421,7 @@ export class HmyMethods implements IContractMethods {
       .on('error', (err: any) => {
         console.log('### err', err);
       })
-      .then((result: any) => {
-        return result.transaction.receipt;
-      });
+      .then(this._responseHandler);
   };
 
   lockAdditionalCollateral = async (
@@ -426,7 +438,8 @@ export class HmyMethods implements IContractMethods {
         gasLimit: this.options.gasLimit,
         gasPrice: this.options.gasPrice,
       })
-      .on('transactionHash', sendTxCallback);
+      .on('transactionHash', sendTxCallback)
+      .then(this._responseHandler);
   };
 
   withdrawCollateral = async (
@@ -443,6 +456,7 @@ export class HmyMethods implements IContractMethods {
         gasLimit: this.options.gasLimit,
         gasPrice: this.options.gasPrice,
       })
-      .on('transactionHash', sendTxCallback);
+      .on('transactionHash', sendTxCallback)
+      .then(this._responseHandler);
   };
 }

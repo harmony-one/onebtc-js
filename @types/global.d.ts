@@ -7,5 +7,6 @@ interface Window {
     chain_url: string;
     net_version: number;
     signTransaction: (arg: unknown) => unknown;
+    getAccount: () => Promise<{ name: string; address: string }>;
   };
 }
