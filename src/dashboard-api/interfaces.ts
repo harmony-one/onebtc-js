@@ -112,3 +112,26 @@ export interface IBtcRelayInfo {
   contractAddress: string;
   waitInterval: number;
 }
+
+export interface IHistoryItem {
+  _id: string;
+  date: string;
+}
+
+export interface IHistoryVaultItem extends IHistoryItem {
+  activeVaults: number;
+  totalCollateral: number;
+  vaults: number;
+}
+
+export interface IHistoryRedeemItem extends IHistoryItem {
+  amountPerDay: number;
+  totalIssued: number;
+  total: number;
+}
+
+export interface IHistoryIssueItem extends IHistoryItem {
+  amountPerDay: number;
+  totalIssued: number;
+  total: number;
+}
