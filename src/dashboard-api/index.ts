@@ -4,6 +4,9 @@ import * as bitcoin from 'bitcoinjs-lib';
 import {
   IBtcRelayInfo,
   IEvent,
+  IHistoryIssueItem,
+  IHistoryRedeemItem,
+  IHistoryVaultItem,
   IIssue,
   IListContainer,
   IRedeem,
@@ -41,6 +44,12 @@ enum DATA_TYPE {
   EVENTS = 'relay/events',
 }
 
+enum ENTITY_HISTORY_TYPE {
+  VAULTS = 'vaults',
+  ISSUED = 'issued',
+  REDEEMS = 'redeemed',
+}
+
 export class DashboardApi {
   dashboardUrl: string;
   btcNodeUrl: string;
@@ -76,7 +85,7 @@ export class DashboardApi {
   };
 
   loadRedeem = async (redeemId: string): Promise<IRedeem> => {
-    return await this.loadData(DATA_TYPE.ISSUES, redeemId);
+    return await this.loadData(DATA_TYPE.REDEEMS, redeemId);
   };
 
   loadVault = async (vaultId: string): Promise<IVault> => {
@@ -177,5 +186,30 @@ export class DashboardApi {
       page: 0,
     });
     return events.content[0];
+  };
+
+  private _loadHistory = async <T>(
+    entityHistory: ENTITY_HISTORY_TYPE,
+    params?: unknown,
+  ): Promise<IListContainer<T>> => {
+    const res = await axios.get(
+      `${this.dashboardUrl}/history/${entityHistory}`,
+      { params },
+    );
+    return res.data;
+  };
+
+  public loadHistoryVault = async () => {
+    return this._loadHistory<IHistoryVaultItem>(ENTITY_HISTORY_TYPE.VAULTS, {
+      step: 'd',
+    });
+  };
+
+  public loadHistoryRedeem = async () => {
+    return this._loadHistory<IHistoryRedeemItem>(ENTITY_HISTORY_TYPE.REDEEMS);
+  };
+
+  public loadHistoryIssue = async () => {
+    return this._loadHistory<IHistoryIssueItem>(ENTITY_HISTORY_TYPE.ISSUED);
   };
 }
