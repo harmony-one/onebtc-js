@@ -2,17 +2,6 @@ export const OneBtc: any = {
   contractName: 'OneBtc',
   abi: [
     {
-      inputs: [
-        {
-          internalType: 'contract IRelay',
-          name: '_relay',
-          type: 'address',
-        },
-      ],
-      stateMutability: 'nonpayable',
-      type: 'constructor',
-    },
-    {
       anonymous: false,
       inputs: [
         {
@@ -259,7 +248,7 @@ export const OneBtc: any = {
           type: 'uint256',
         },
       ],
-      name: 'IssueAmountChange',
+      name: 'IssueAmountChanged',
       type: 'event',
     },
     {
@@ -268,7 +257,7 @@ export const OneBtc: any = {
         {
           indexed: true,
           internalType: 'uint256',
-          name: 'issudeId',
+          name: 'issuedId',
           type: 'uint256',
         },
         {
@@ -302,7 +291,7 @@ export const OneBtc: any = {
           type: 'address',
         },
       ],
-      name: 'IssueCancel',
+      name: 'IssueCanceled',
       type: 'event',
     },
     {
@@ -311,7 +300,7 @@ export const OneBtc: any = {
         {
           indexed: true,
           internalType: 'uint256',
-          name: 'issudeId',
+          name: 'issuedId',
           type: 'uint256',
         },
         {
@@ -345,7 +334,7 @@ export const OneBtc: any = {
           type: 'address',
         },
       ],
-      name: 'IssueComplete',
+      name: 'IssueCompleted',
       type: 'event',
     },
     {
@@ -388,7 +377,7 @@ export const OneBtc: any = {
           type: 'address',
         },
       ],
-      name: 'IssueRequest',
+      name: 'IssueRequested',
       type: 'event',
     },
     {
@@ -469,7 +458,7 @@ export const OneBtc: any = {
           type: 'address',
         },
       ],
-      name: 'RedeemCancel',
+      name: 'RedeemCanceled',
       type: 'event',
     },
     {
@@ -512,7 +501,7 @@ export const OneBtc: any = {
           type: 'address',
         },
       ],
-      name: 'RedeemComplete',
+      name: 'RedeemCompleted',
       type: 'event',
     },
     {
@@ -555,7 +544,7 @@ export const OneBtc: any = {
           type: 'address',
         },
       ],
-      name: 'RedeemRequest',
+      name: 'RedeemRequested',
       type: 'event',
     },
     {
@@ -824,20 +813,6 @@ export const OneBtc: any = {
       constant: true,
     },
     {
-      inputs: [],
-      name: 'TotalCollateral',
-      outputs: [
-        {
-          internalType: 'uint256',
-          name: '',
-          type: 'uint256',
-        },
-      ],
-      stateMutability: 'view',
-      type: 'function',
-      constant: true,
-    },
-    {
       inputs: [
         {
           internalType: 'address',
@@ -932,6 +907,26 @@ export const OneBtc: any = {
       constant: true,
     },
     {
+      inputs: [
+        {
+          internalType: 'uint256',
+          name: 'amount',
+          type: 'uint256',
+        },
+      ],
+      name: 'collateralToWrapped',
+      outputs: [
+        {
+          internalType: 'uint256',
+          name: '',
+          type: 'uint256',
+        },
+      ],
+      stateMutability: 'view',
+      type: 'function',
+      constant: true,
+    },
+    {
       inputs: [],
       name: 'decimals',
       outputs: [
@@ -970,99 +965,13 @@ export const OneBtc: any = {
       type: 'function',
     },
     {
-      inputs: [
-        {
-          internalType: 'address',
-          name: 'requester',
-          type: 'address',
-        },
-        {
-          internalType: 'uint256',
-          name: 'issueId',
-          type: 'uint256',
-        },
-      ],
-      name: 'getIssueAmount',
+      inputs: [],
+      name: 'getExchangeRate',
       outputs: [
         {
           internalType: 'uint256',
           name: '',
           type: 'uint256',
-        },
-      ],
-      stateMutability: 'view',
-      type: 'function',
-      constant: true,
-    },
-    {
-      inputs: [
-        {
-          internalType: 'address',
-          name: 'requester',
-          type: 'address',
-        },
-        {
-          internalType: 'uint256',
-          name: 'issueId',
-          type: 'uint256',
-        },
-      ],
-      name: 'getIssueBtcAddress',
-      outputs: [
-        {
-          internalType: 'address',
-          name: '',
-          type: 'address',
-        },
-      ],
-      stateMutability: 'view',
-      type: 'function',
-      constant: true,
-    },
-    {
-      inputs: [
-        {
-          internalType: 'address',
-          name: 'requester',
-          type: 'address',
-        },
-        {
-          internalType: 'uint256',
-          name: 'issueId',
-          type: 'uint256',
-        },
-      ],
-      name: 'getIssueStatus',
-      outputs: [
-        {
-          internalType: 'enum RequestStatus',
-          name: '',
-          type: 'uint8',
-        },
-      ],
-      stateMutability: 'view',
-      type: 'function',
-      constant: true,
-    },
-    {
-      inputs: [
-        {
-          internalType: 'address',
-          name: 'requester',
-          type: 'address',
-        },
-        {
-          internalType: 'uint256',
-          name: 'redeemId',
-          type: 'uint256',
-        },
-      ],
-      name: 'getRedeemStatus',
-      outputs: [
-        {
-          internalType: 'enum RequestStatus',
-          name: '',
-          type: 'uint8',
         },
       ],
       stateMutability: 'view',
@@ -1458,6 +1367,20 @@ export const OneBtc: any = {
     },
     {
       inputs: [],
+      name: 'totalCollateral',
+      outputs: [
+        {
+          internalType: 'uint256',
+          name: '',
+          type: 'uint256',
+        },
+      ],
+      stateMutability: 'view',
+      type: 'function',
+      constant: true,
+    },
+    {
+      inputs: [],
       name: 'totalSupply',
       outputs: [
         {
@@ -1612,78 +1535,13 @@ export const OneBtc: any = {
     {
       inputs: [
         {
-          internalType: 'bytes',
-          name: 'rawTx',
-          type: 'bytes',
+          internalType: 'contract IRelay',
+          name: '_relay',
+          type: 'address',
         },
       ],
-      name: 'getHash',
-      outputs: [
-        {
-          internalType: 'bytes32',
-          name: '',
-          type: 'bytes32',
-        },
-      ],
-      stateMutability: 'nonpayable',
-      type: 'function',
-    },
-    {
-      inputs: [
-        {
-          internalType: 'bytes',
-          name: 'rawTx',
-          type: 'bytes',
-        },
-      ],
-      name: 'getHashView',
-      outputs: [
-        {
-          internalType: 'bytes32',
-          name: '',
-          type: 'bytes32',
-        },
-      ],
-      stateMutability: 'view',
-      type: 'function',
-      constant: true,
-    },
-    {
-      inputs: [
-        {
-          internalType: 'uint32',
-          name: 'height',
-          type: 'uint32',
-        },
-        {
-          internalType: 'uint256',
-          name: 'index',
-          type: 'uint256',
-        },
-        {
-          internalType: 'bytes',
-          name: 'rawTx',
-          type: 'bytes',
-        },
-        {
-          internalType: 'bytes',
-          name: 'header',
-          type: 'bytes',
-        },
-        {
-          internalType: 'bytes',
-          name: 'merkleProof',
-          type: 'bytes',
-        },
-      ],
-      name: 'verifyTx',
-      outputs: [
-        {
-          internalType: 'bytes',
-          name: '',
-          type: 'bytes',
-        },
-      ],
+      name: 'initialize',
+      outputs: [],
       stateMutability: 'nonpayable',
       type: 'function',
     },
@@ -1729,14 +1587,9 @@ export const OneBtc: any = {
           type: 'bytes',
         },
         {
-          internalType: 'uint32',
-          name: 'height',
-          type: 'uint32',
-        },
-        {
-          internalType: 'uint256',
-          name: 'index',
-          type: 'uint256',
+          internalType: 'uint64',
+          name: 'heightAndIndex',
+          type: 'uint64',
         },
         {
           internalType: 'bytes',
@@ -1813,14 +1666,9 @@ export const OneBtc: any = {
           type: 'bytes',
         },
         {
-          internalType: 'uint32',
-          name: 'height',
-          type: 'uint32',
-        },
-        {
-          internalType: 'uint256',
-          name: 'index',
-          type: 'uint256',
+          internalType: 'uint64',
+          name: 'heightAndIndex',
+          type: 'uint64',
         },
         {
           internalType: 'bytes',
@@ -1932,14 +1780,9 @@ export const OneBtc: any = {
           type: 'bytes',
         },
         {
-          internalType: 'uint32',
-          name: 'height',
-          type: 'uint32',
-        },
-        {
-          internalType: 'uint256',
-          name: 'index',
-          type: 'uint256',
+          internalType: 'uint64',
+          name: 'heightAndIndex',
+          type: 'uint64',
         },
         {
           internalType: 'bytes',
