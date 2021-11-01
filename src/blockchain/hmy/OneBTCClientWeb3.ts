@@ -2,18 +2,20 @@ import Web3 from 'web3';
 import { Contract } from 'web3-eth-contract';
 import { getAddress } from '@harmony-js/crypto';
 import { OneBtc } from '../out/OneBtc';
-import IContractMethods, {
+import IOneBTCClient, {
   IssueDetails,
   RedeemDetails,
   RedeemStatus,
   SendTxCallback,
+  TransactionReceipt,
 } from './types';
 import { BTCNodeClient } from '../../btcNode';
 import { Transaction } from 'bitcoinjs-lib';
 import utils from 'web3-utils';
 
-interface IHmyMethodsInitParams {
+interface OneBTCClientWeb3Params {
   web3: Web3;
+  useMetamask?: boolean;
 
   contractAddress: string;
   nodeURL: string;
@@ -23,7 +25,7 @@ interface IHmyMethodsInitParams {
 
 const emptyFunction = () => {};
 
-export class HmyMethodsWeb3 implements IContractMethods {
+export class OneBTCClientWeb3 implements IOneBTCClient {
   public web3: Web3;
 
   public contract: Contract;
@@ -31,13 +33,16 @@ export class HmyMethodsWeb3 implements IContractMethods {
 
   public contractAddress: string;
   private options = { gasPrice: 1000000000, gasLimit: 6721900 };
-  public useMetamask = false;
+  private _useMetamask = false;
+  private _accountAddress: string = null;
 
-  constructor(params: IHmyMethodsInitParams) {
+  constructor(params: OneBTCClientWeb3Params) {
     this.web3 = params.web3;
     this.contractAddress = params.contractAddress;
 
     this.btcNodeClient = params.btcNodeClient;
+
+    this._useMetamask = params.useMetamask || false;
 
     if (params.options) {
       this.options = params.options;
@@ -51,13 +56,28 @@ export class HmyMethodsWeb3 implements IContractMethods {
     );
   };
 
+  async setAccount(privateKey: string) {
+    const ethUserAccount = await this.web3.eth.accounts.privateKeyToAccount(
+      privateKey,
+    );
+
+    this.web3.eth.accounts.wallet.add(ethUserAccount);
+    this.web3.eth.defaultAccount = ethUserAccount.address;
+
+    this._accountAddress = ethUserAccount.address;
+  }
+
+  getUserAddress(): string {
+    return this._accountAddress;
+  }
+
   setUseOneWallet = (value: boolean) => value;
   setUseMathWallet = (value: boolean) => value;
 
-  setUseMetamask = (value: boolean) => (this.useMetamask = value);
+  setUseMetamask = (value: boolean) => (this._useMetamask = value);
 
   getSenderAddress = async (): Promise<string> => {
-    if (this.useMetamask) {
+    if (this._useMetamask) {
       // @ts-expect-error TS2304: Cannot find name 'ethereum'.
       const accounts = await ethereum.enable();
       return accounts[0];
@@ -66,7 +86,7 @@ export class HmyMethodsWeb3 implements IContractMethods {
     return this.web3.eth.defaultAccount;
   };
 
-  private _prepareAddress(address: string) {
+  private _prepareAddress(address: string): string {
     return getAddress(address).checksum;
   }
 
@@ -74,7 +94,7 @@ export class HmyMethodsWeb3 implements IContractMethods {
     amount: number,
     requesterAddress: string,
     sendTxCallback?: (hash: string) => void,
-  ) => {
+  ): Promise<IssueDetails> => {
     const addressHex = this._prepareAddress(requesterAddress);
     const senderAddress = await this.getSenderAddress();
 
@@ -86,7 +106,10 @@ export class HmyMethodsWeb3 implements IContractMethods {
         gasPrice: this.options.gasPrice,
         value: utils.toBN(amount),
       })
-      .on('transactionHash', sendTxCallback || emptyFunction);
+      .on('transactionHash', sendTxCallback || emptyFunction)
+      .then((txReceipt: TransactionReceipt) => {
+        return this.getIssueDetails(txReceipt.transactionHash);
+      });
   };
 
   executeIssue = async (
@@ -94,7 +117,7 @@ export class HmyMethodsWeb3 implements IContractMethods {
     issueId: string,
     btcTxHash: string,
     sendTxCallback?: (hash: string) => void,
-  ) => {
+  ): Promise<TransactionReceipt> => {
     const addressHex = this._prepareAddress(requesterAddress);
 
     const btcTx = await this.btcNodeClient.loadBtcTx(btcTxHash);
@@ -130,7 +153,7 @@ export class HmyMethodsWeb3 implements IContractMethods {
     requesterAddress: string,
     issueId: number,
     sendTxCallback?: (hash: string) => void,
-  ) => {
+  ): Promise<TransactionReceipt> => {
     const addressHex = this._prepareAddress(requesterAddress);
     const senderAddress = await this.getSenderAddress();
 
@@ -154,7 +177,7 @@ export class HmyMethodsWeb3 implements IContractMethods {
     recipient: string,
     amount: number,
     sendTxCallback?: (hash: string) => void,
-  ) => {
+  ): Promise<TransactionReceipt> => {
     const addressHex = this._prepareAddress(recipient);
     const amountBN = utils.toBN(amount);
     const senderAddress = await this.getSenderAddress();
@@ -173,7 +196,7 @@ export class HmyMethodsWeb3 implements IContractMethods {
     btcAddress: string,
     vaultId: string,
     sendTxCallback?: SendTxCallback,
-  ) => {
+  ): Promise<RedeemDetails> => {
     const amountBN = utils.toBN(amountOneBtc);
     const addressHex = this._prepareAddress(vaultId);
     const senderAddress = await this.getSenderAddress();
@@ -185,15 +208,18 @@ export class HmyMethodsWeb3 implements IContractMethods {
         gasLimit: this.options.gasLimit,
         gasPrice: this.options.gasPrice,
       })
-      .on('transactionHash', sendTxCallback || emptyFunction);
+      .on('transactionHash', sendTxCallback || emptyFunction)
+      .then((txReceipt: TransactionReceipt) => {
+        return this.getRedeemDetails(txReceipt.transactionHash);
+      });
   };
 
   executeRedeem = async (
     requesterAddress: string,
-    redeemId: number,
+    redeemId: string,
     btcTxHash: string,
     sendTxCallback?: SendTxCallback,
-  ) => {
+  ): Promise<TransactionReceipt> => {
     const btcTx = await this.btcNodeClient.loadBtcTx(btcTxHash);
     const { height, index, hash, hex } = btcTx;
     const txBlock = await this.btcNodeClient.loadBlockByHeight(height);
@@ -319,7 +345,7 @@ export class HmyMethodsWeb3 implements IContractMethods {
   lockAdditionalCollateral = async (
     amount: number,
     sendTxCallback: SendTxCallback,
-  ) => {
+  ): Promise<TransactionReceipt> => {
     const senderAddress = await this.getSenderAddress();
 
     return this.contract.methods
@@ -336,7 +362,7 @@ export class HmyMethodsWeb3 implements IContractMethods {
   withdrawCollateral = async (
     amount: number,
     sendTxCallback: SendTxCallback,
-  ) => {
+  ): Promise<TransactionReceipt> => {
     const senderAddress = await this.getSenderAddress();
 
     return this.contract.methods

@@ -44,8 +44,52 @@ export interface TransactionReceipt {
   transactionHash: string;
 }
 
-export default interface IContractMethods {
-  // web3: Web3;
+interface Event<T> {
+  returnValues: T;
+  address: string;
+  blockHash: string;
+  blockNumber: number;
+  logIndex: number;
+  removed: boolean;
+  transactionHash: string;
+  transactionIndex: number;
+  id: string;
+  raw: {
+    data: string;
+    topics: string[];
+  };
+  event: string;
+  signature: string;
+}
+
+interface IssueRequestEvent extends Event<IssueDetails> {
+  event: 'IssueRequest';
+}
+interface LockCollateralEvent
+  extends Event<{
+    sender: string;
+    amount: string;
+  }> {
+  event: 'LockCollateral';
+}
+
+interface IncreaseToBeIssuedTokensEvent
+  extends Event<{
+    vaultId: string;
+    amount: string;
+  }> {
+  event: 'IncreaseToBeIssuedTokens';
+}
+
+export interface RequestIssueReturn extends TransactionReceipt {
+  events: {
+    IssueRequest: IssueRequestEvent;
+    LockCollateral: LockCollateralEvent;
+    IncreaseToBeIssuedTokens: IncreaseToBeIssuedTokensEvent;
+  };
+}
+
+export default interface IOneBTCClient {
   btcNodeClient: BTCNodeClient;
   init(): Promise<void>;
   setUseOneWallet(value: boolean): boolean;
@@ -53,9 +97,9 @@ export default interface IContractMethods {
   setUseMetamask(value: boolean): boolean;
   requestIssue(
     amount: number,
-    address: string,
+    vaultAddress: string,
     sendTxCallback?: SendTxCallback,
-  ): Promise<TransactionReceipt>;
+  ): Promise<IssueDetails>;
   getRedeemStatus(requester: string, redeemId: string): Promise<RedeemStatus>;
   getIssueStatus(requester: string, issueId: string): Promise<IssueStatus>;
   executeIssue(
@@ -83,11 +127,11 @@ export default interface IContractMethods {
     btcAddress: string,
     vaultId: string,
     sendTxCallback?: SendTxCallback,
-  ): Promise<TransactionReceipt>;
+  ): Promise<RedeemDetails>;
 
   executeRedeem(
     requester: string,
-    redeemId: number,
+    redeemId: string,
     rawTx: any,
     sendTxCallback?: SendTxCallback,
   ): Promise<TransactionReceipt>;
