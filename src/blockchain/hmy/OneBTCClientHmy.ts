@@ -1,12 +1,13 @@
 import { Harmony } from '@harmony-js/core';
 import { OneBtc } from '../out/OneBtc';
 import { Contract } from '@harmony-js/contract';
-import IContractMethods, {
+import IOneBTCClient, {
   IssueDetails,
   IssueStatus,
   RedeemDetails,
   RedeemStatus,
   SendTxCallback,
+  TransactionReceipt,
 } from './types';
 import { getAddress } from '@harmony-js/crypto';
 import Web3 from 'web3';
@@ -14,19 +15,20 @@ import { BTCNodeClient } from '../../btcNode';
 import { Transaction } from 'bitcoinjs-lib';
 import utils from 'web3-utils';
 
-interface IHmyMethodsInitParams {
+interface OneBTCClientHmyParams {
+  useOneWallet?: boolean;
   hmy: Harmony;
-  web3: Web3;
   btcNodeClient: BTCNodeClient;
   contractAddress: string;
   nodeURL: string;
   options?: { gasPrice: number; gasLimit: number };
 }
 
-export class HmyMethods implements IContractMethods {
+export class OneBTCClientHmy implements IOneBTCClient {
   public hmy: Harmony;
   public web3: Web3;
   public contractAddress: string;
+  private _accountAddress: string = null;
 
   public btcNodeClient: BTCNodeClient;
   public nodeURL: string;
@@ -35,12 +37,13 @@ export class HmyMethods implements IContractMethods {
   public options = { gasPrice: 1000000000, gasLimit: 6721900 };
   private _useOneWallet = false;
 
-  constructor(params: IHmyMethodsInitParams) {
+  constructor(params: OneBTCClientHmyParams) {
     this.hmy = params.hmy;
-    this.web3 = params.web3;
     this.contractAddress = params.contractAddress;
     this.nodeURL = params.nodeURL;
     this.btcNodeClient = params.btcNodeClient;
+
+    this._useOneWallet = params.useOneWallet || false;
 
     if (params.options) {
       this.options = {
@@ -48,6 +51,15 @@ export class HmyMethods implements IContractMethods {
         gasLimit: params.options.gasLimit,
       };
     }
+  }
+
+  async setAccount(privateKey: string) {
+    const account = await this.hmy.wallet.addByPrivateKey(privateKey);
+    this._accountAddress = account.address;
+  }
+
+  getUserAddress(): string {
+    return this._accountAddress;
   }
 
   getRedeemStatus(
@@ -95,6 +107,10 @@ export class HmyMethods implements IContractMethods {
       OneBtc.abi,
       this.contractAddress,
     );
+
+    if (this._useOneWallet) {
+      this._injectSignTransaction();
+    }
   };
 
   balanceOf = (requesterAddress: string): Promise<string> => {
@@ -167,7 +183,7 @@ export class HmyMethods implements IContractMethods {
 
   executeRedeem = async (
     requesterAddress: string,
-    redeemId: number,
+    redeemId: string,
     btcTxHash: any,
     header: any,
     sendTxCallback?: SendTxCallback,
@@ -345,10 +361,10 @@ export class HmyMethods implements IContractMethods {
 
   requestIssue = async (
     amount: number,
-    address: string,
+    vaultAddress: string,
     sendTxCallback?: SendTxCallback,
-  ) => {
-    const addressHex = this._prepareAddress(address);
+  ): Promise<IssueDetails> => {
+    const addressHex = this._prepareAddress(vaultAddress);
     const senderAddress = await this.getSenderAddress();
 
     return await this.contract.methods
@@ -360,7 +376,10 @@ export class HmyMethods implements IContractMethods {
         value: utils.toBN(amount),
       })
       .on('transactionHash', sendTxCallback)
-      .then(this._responseHandler);
+      .then(this._responseHandler)
+      .then((txReceipt: TransactionReceipt) => {
+        return this.getIssueDetails(txReceipt.transactionHash);
+      });
   };
 
   requestRedeem = async (
@@ -368,7 +387,7 @@ export class HmyMethods implements IContractMethods {
     btcAddress: string,
     vaultId: string,
     sendTxCallback?: SendTxCallback,
-  ) => {
+  ): Promise<RedeemDetails> => {
     const _amountOneBtcBN = utils.toBN(amountOneBtc);
     const addressHex = this._prepareAddress(vaultId);
 
@@ -381,7 +400,10 @@ export class HmyMethods implements IContractMethods {
         gasPrice: this.options.gasPrice,
       })
       .on('transactionHash', sendTxCallback)
-      .then(this._responseHandler);
+      .then(this._responseHandler)
+      .then((txReceipt: TransactionReceipt) => {
+        return this.getRedeemDetails(txReceipt.transactionHash);
+      });
   };
 
   setUseMathWallet(value: boolean): boolean {
