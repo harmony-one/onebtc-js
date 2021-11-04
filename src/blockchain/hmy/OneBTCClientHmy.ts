@@ -120,7 +120,7 @@ export class OneBTCClientHmy implements IOneBTCClient {
 
   cancelIssue = async (
     requesterAddress: string,
-    issueId: number,
+    issueId: number | string,
     sendTxCallback?: SendTxCallback,
   ) => {
     const addressHex = this._prepareAddress(requesterAddress);
@@ -447,7 +447,7 @@ export class OneBTCClientHmy implements IOneBTCClient {
   };
 
   lockAdditionalCollateral = async (
-    amount: number,
+    amount: number | string,
     sendTxCallback: SendTxCallback,
   ) => {
     const senderAddress = await this.getSenderAddress();
