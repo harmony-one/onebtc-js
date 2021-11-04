@@ -135,3 +135,14 @@ export interface IHistoryIssueItem extends IHistoryItem {
   totalIssued: number;
   total: number;
 }
+
+export interface IDashboardConfig {
+  relayerClient: {
+    relayContractAddress: string;
+    btcNodeUrl: string;
+    hmyNodeUrl: string;
+  };
+  mainEvents: {
+    contractAddress: string;
+  };
+}
