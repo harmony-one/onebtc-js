@@ -111,7 +111,7 @@ export default interface IOneBTCClient {
 
   cancelIssue(
     requester: string,
-    issueId: number,
+    issueId: string,
     sendTxCallback?: SendTxCallback,
   ): Promise<TransactionReceipt>;
 
@@ -144,11 +144,11 @@ export default interface IOneBTCClient {
   ): Promise<any>;
 
   lockAdditionalCollateral(
-    amount: number,
+    amount: number | string,
     sendTxCallback: SendTxCallback,
   ): Promise<any>;
   withdrawCollateral(
-    amount: number,
+    amount: number | string,
     sendTxCallback: SendTxCallback,
   ): Promise<any>;
 

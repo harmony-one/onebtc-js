@@ -3,6 +3,7 @@ import { Buffer } from 'buffer';
 import * as bitcoin from 'bitcoinjs-lib';
 import {
   IBtcRelayInfo,
+  IDashboardConfig,
   IEvent,
   IHistoryIssueItem,
   IHistoryRedeemItem,
@@ -61,6 +62,11 @@ export class DashboardApi {
 
     this.btcNodeClient = new BTCNodeClient(this.btcNodeUrl);
   }
+
+  loadDashboardConfig = async (): Promise<IDashboardConfig> => {
+    const res = await axios.get(`${this.dashboardUrl}/monitor`);
+    return res.data;
+  };
 
   loadDataList = async <T>(
     dataType: DATA_TYPE,

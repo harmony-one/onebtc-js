@@ -151,7 +151,7 @@ export class OneBTCClientWeb3 implements IOneBTCClient {
 
   cancelIssue = async (
     requesterAddress: string,
-    issueId: number,
+    issueId: number | string,
     sendTxCallback?: (hash: string) => void,
   ): Promise<TransactionReceipt> => {
     const addressHex = this._prepareAddress(requesterAddress);
@@ -343,7 +343,7 @@ export class OneBTCClientWeb3 implements IOneBTCClient {
   };
 
   lockAdditionalCollateral = async (
-    amount: number,
+    amount: number | string,
     sendTxCallback: SendTxCallback,
   ): Promise<TransactionReceipt> => {
     const senderAddress = await this.getSenderAddress();
@@ -360,7 +360,7 @@ export class OneBTCClientWeb3 implements IOneBTCClient {
   };
 
   withdrawCollateral = async (
-    amount: number,
+    amount: number | string,
     sendTxCallback: SendTxCallback,
   ): Promise<TransactionReceipt> => {
     const senderAddress = await this.getSenderAddress();
