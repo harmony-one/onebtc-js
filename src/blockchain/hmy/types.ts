@@ -14,11 +14,13 @@ export interface RedeemDetails {
 export enum IssueStatus {
   PENDING = '1',
   COMPLETED = '2',
+  CANCELED = '3',
 }
 
 export enum RedeemStatus {
   PENDING = '1',
   COMPLETED = '2',
+  CANCELED = '3',
 }
 
 export interface IssueDetails {
