@@ -12,6 +12,7 @@ import IOneBTCClient, {
 import { BTCNodeClient } from '../../btcNode';
 import { Transaction } from 'bitcoinjs-lib';
 import utils from 'web3-utils';
+import BN from 'bn.js';
 
 interface OneBTCClientWeb3Params {
   web3: Web3;
@@ -71,6 +72,10 @@ export class OneBTCClientWeb3 implements IOneBTCClient {
     return this._accountAddress;
   }
 
+  getGasPrice = async () => {
+    return new BN(await this.web3.eth.getGasPrice()).mul(new BN(1));
+  };
+
   setUseOneWallet = (value: boolean) => value;
   setUseMathWallet = (value: boolean) => value;
 
@@ -98,12 +103,14 @@ export class OneBTCClientWeb3 implements IOneBTCClient {
     const addressHex = this._prepareAddress(requesterAddress);
     const senderAddress = await this.getSenderAddress();
 
+    const gasPrice = await this.getGasPrice();
+
     return await this.contract.methods
       .requestIssue(utils.toBN(amount), addressHex)
       .send({
         from: senderAddress,
         gasLimit: this.options.gasLimit,
-        gasPrice: this.options.gasPrice,
+        gasPrice,
         value: utils.toBN(amount),
       })
       .on('transactionHash', sendTxCallback || emptyFunction)
@@ -131,6 +138,8 @@ export class OneBTCClientWeb3 implements IOneBTCClient {
 
     const senderAddress = await this.getSenderAddress();
 
+    const gasPrice = await this.getGasPrice();
+
     return await this.contract.methods
       .executeIssue(
         addressHex,
@@ -144,7 +153,7 @@ export class OneBTCClientWeb3 implements IOneBTCClient {
       .send({
         from: senderAddress,
         gasLimit: this.options.gasLimit,
-        gasPrice: this.options.gasPrice,
+        gasPrice,
       })
       .on('transactionHash', sendTxCallback);
   };
@@ -157,12 +166,14 @@ export class OneBTCClientWeb3 implements IOneBTCClient {
     const addressHex = this._prepareAddress(requesterAddress);
     const senderAddress = await this.getSenderAddress();
 
+    const gasPrice = await this.getGasPrice();
+
     return await this.contract.methods
       .cancelIssue(addressHex, utils.toBN(issueId))
       .send({
         from: senderAddress,
         gasLimit: this.options.gasLimit,
-        gasPrice: this.options.gasPrice,
+        gasPrice,
       })
       .on('transactionHash', sendTxCallback || emptyFunction);
   };
@@ -181,12 +192,13 @@ export class OneBTCClientWeb3 implements IOneBTCClient {
     const addressHex = this._prepareAddress(recipient);
     const amountBN = utils.toBN(amount);
     const senderAddress = await this.getSenderAddress();
+    const gasPrice = await this.getGasPrice();
     return this.contract.methods
       .transfer(addressHex, amountBN)
       .send({
         from: senderAddress,
         gasLimit: this.options.gasLimit,
-        gasPrice: this.options.gasPrice,
+        gasPrice,
       })
       .on('transactionHash', sendTxCallback || emptyFunction);
   };
@@ -200,13 +212,14 @@ export class OneBTCClientWeb3 implements IOneBTCClient {
     const amountBN = utils.toBN(amountOneBtc);
     const addressHex = this._prepareAddress(vaultId);
     const senderAddress = await this.getSenderAddress();
+    const gasPrice = await this.getGasPrice();
 
     return this.contract.methods
       .requestRedeem(amountBN, btcAddress, addressHex)
       .send({
         from: senderAddress,
         gasLimit: this.options.gasLimit,
-        gasPrice: this.options.gasPrice,
+        gasPrice,
       })
       .on('transactionHash', sendTxCallback || emptyFunction)
       .then((txReceipt: TransactionReceipt) => {
@@ -232,6 +245,8 @@ export class OneBTCClientWeb3 implements IOneBTCClient {
     const addressHex = this._prepareAddress(requesterAddress);
     const senderAddress = await this.getSenderAddress();
 
+    const gasPrice = await this.getGasPrice();
+
     return await this.contract.methods
       .executeRedeem(
         addressHex,
@@ -245,7 +260,7 @@ export class OneBTCClientWeb3 implements IOneBTCClient {
       .send({
         from: senderAddress,
         gasLimit: this.options.gasLimit,
-        gasPrice: this.options.gasPrice,
+        gasPrice,
       })
       .on('transactionHash', sendTxCallback);
   };
@@ -270,12 +285,13 @@ export class OneBTCClientWeb3 implements IOneBTCClient {
   ) => {
     const senderAddress = await this.getSenderAddress();
 
+    const gasPrice = await this.getGasPrice();
     return await this.contract.methods
       .registerVault(utils.toBN(x), utils.toBN(y))
       .send({
         from: senderAddress,
         gasLimit: this.options.gasLimit,
-        gasPrice: this.options.gasPrice,
+        gasPrice,
       })
       .on('transactionHash', sendTxCallback);
   };
@@ -348,13 +364,15 @@ export class OneBTCClientWeb3 implements IOneBTCClient {
   ): Promise<TransactionReceipt> => {
     const senderAddress = await this.getSenderAddress();
 
+    const gasPrice = await this.getGasPrice();
+
     return this.contract.methods
       .lockAdditionalCollateral()
       .send({
         value: utils.toBN(amount),
         from: senderAddress,
         gasLimit: this.options.gasLimit,
-        gasPrice: this.options.gasPrice,
+        gasPrice,
       })
       .on('transactionHash', sendTxCallback);
   };
@@ -365,12 +383,14 @@ export class OneBTCClientWeb3 implements IOneBTCClient {
   ): Promise<TransactionReceipt> => {
     const senderAddress = await this.getSenderAddress();
 
+    const gasPrice = await this.getGasPrice();
+
     return this.contract.methods
       .withdrawCollateral(utils.toBN(amount))
       .send({
         from: senderAddress,
         gasLimit: this.options.gasLimit,
-        gasPrice: this.options.gasPrice,
+        gasPrice,
       })
       .on('transactionHash', sendTxCallback);
   };
