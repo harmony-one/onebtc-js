@@ -4,6 +4,7 @@ const test = async () => {
   const dApi = new DashboardApi({
     dashboardUrl: 'https://relayer.btc.test.hmny.io',
     btcNodeUrl: 'https://btc2.test.hmny.io',
+    networkType: 'testnet',
   });
 
   // console.log(

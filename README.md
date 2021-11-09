@@ -59,11 +59,12 @@ onebtcClient.requestRedeem(10000, VAULT_ADDRESS);
 
 ### Init dashboard client
 ```js
-import { DashboardApi } from 'onebtc.sdk/lib/dashboard-api';
+import { DashboardApi, Network } from 'onebtc.sdk/lib/dashboard-api';
 
 export const dashboardClient = new DashboardApi({
   dashboardUrl: 'https://dashboard.btc.test.hmny.io',
   btcNodeUrl: config.bitcoin.btcNodeUrl.testnet,
+  network: Network.TESTNET,
 });
 ```
 

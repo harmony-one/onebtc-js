@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-var-requires, no-undef */
-const { DashboardApi } = require('../../lib');
+const { DashboardApi, Network } = require('../../lib');
 const { createClient } = require('./createClient');
 
 const BTC_NODE_URL = 'https://btc2.test.hmny.io';
@@ -19,6 +19,7 @@ async function requestIssue() {
     const dashboardClient = new DashboardApi({
       btcNodeUrl: BTC_NODE_URL,
       dashboardUrl: DASHBOARD_URL,
+      networkType: Network.TESTNET,
     });
 
     const issue = await dashboardClient.loadIssue(issueDetails.issue_id);
