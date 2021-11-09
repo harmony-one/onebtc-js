@@ -16,9 +16,15 @@ import {
 import { getActualOutputs } from './helpers';
 import { BTCNodeClient } from '../btcNode';
 
-export interface IDashboardApi {
+export enum Network {
+  TESTNET = 'testnet',
+  MAINNET = 'mainnet',
+}
+
+export interface IDashboardApiParams {
   dashboardUrl: string;
   btcNodeUrl: string;
+  networkType: 'mainnet' | 'testnet';
 }
 
 export interface IGetParams {
@@ -55,12 +61,13 @@ export class DashboardApi {
   dashboardUrl: string;
   btcNodeUrl: string;
   btcNodeClient: BTCNodeClient;
+  networkType: 'mainnet' | 'testnet';
 
-  constructor(params: IDashboardApi) {
+  constructor(params: IDashboardApiParams) {
     this.dashboardUrl = params.dashboardUrl;
     this.btcNodeUrl = params.btcNodeUrl;
-
     this.btcNodeClient = new BTCNodeClient(this.btcNodeUrl);
+    this.networkType = params.networkType;
   }
 
   loadDashboardConfig = async (): Promise<IDashboardConfig> => {
@@ -118,6 +125,15 @@ export class DashboardApi {
     return this.loadDataList<IVault>(DATA_TYPE.VAULTS, params);
   };
 
+  addressToBench32(addressHex: string) {
+    const prefix = this.networkType === Network.MAINNET ? 'bc' : 'tb';
+    return bitcoin.address.toBech32(
+      Buffer.from(addressHex.slice(2), 'hex'),
+      0,
+      prefix,
+    );
+  }
+
   getVaultFreeOutputs = async (vault: string): Promise<IFreeOutput[]> => {
     const issues = await this.loadIssueList({ page: 0, size: 500, vault });
 
@@ -130,11 +146,7 @@ export class DashboardApi {
     while ((getMax || totalAmount < amount) && i < issues.content.length) {
       const issue = issues.content[i];
 
-      const bech32Address = bitcoin.address.toBech32(
-        Buffer.from(issue.btcAddress.slice(2), 'hex'),
-        0,
-        'tb',
-      );
+      const bech32Address = this.addressToBench32(issue.btcAddress);
       const txs = await this.btcNodeClient.loadTxsByAddress(bech32Address);
       const outputs = getActualOutputs(txs, bech32Address);
 
