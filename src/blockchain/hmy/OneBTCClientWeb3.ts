@@ -123,6 +123,7 @@ export class OneBTCClientWeb3 implements IOneBTCClient {
     requesterAddress: string,
     issueId: string,
     btcTxHash: string,
+    vaultBtcAddress: string,
     sendTxCallback?: (hash: string) => void,
   ): Promise<TransactionReceipt> => {
     const addressHex = this._prepareAddress(requesterAddress);
@@ -135,6 +136,13 @@ export class OneBTCClientWeb3 implements IOneBTCClient {
     const tx = Transaction.fromHex(hex);
     // @ts-expect-error TS2341: Property '__toBuffer' is private and only accessible within class 'Transaction'.
     const hexForTxId = tx.__toBuffer().toString('hex');
+    const outputIndex = btcTx.outputs.findIndex(
+      (output) => output.address === vaultBtcAddress,
+    );
+
+    if (!outputIndex) {
+      throw Error('BTC tx has no valid output');
+    }
 
     const senderAddress = await this.getSenderAddress();
 
@@ -149,6 +157,7 @@ export class OneBTCClientWeb3 implements IOneBTCClient {
         height,
         index,
         '0x' + txBlock.toHex(),
+        outputIndex,
       )
       .send({
         from: senderAddress,

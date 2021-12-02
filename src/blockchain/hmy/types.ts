@@ -108,6 +108,7 @@ export default interface IOneBTCClient {
     requester: string,
     issueId: string,
     btcTxHash: string,
+    vaultBtcAddress: string,
     sendTxCallback?: SendTxCallback,
   ): Promise<TransactionReceipt>;
 

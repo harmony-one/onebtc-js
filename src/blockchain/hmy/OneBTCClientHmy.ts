@@ -148,6 +148,7 @@ export class OneBTCClientHmy implements IOneBTCClient {
     requesterAddress: string,
     issueId: string,
     btcTxHash: string,
+    vaultBtcAddress: string,
     sendTxCallback?: SendTxCallback,
   ) => {
     const btcTx = await this.btcNodeClient.loadBtcTx(btcTxHash);
@@ -160,6 +161,13 @@ export class OneBTCClientHmy implements IOneBTCClient {
     const hexForTxId = tx.__toBuffer().toString('hex');
     const senderAddress = await this.getSenderAddress();
     const addressHex = this._prepareAddress(requesterAddress);
+    const outputIndex = btcTx.outputs.findIndex(
+      (output) => output.address === vaultBtcAddress,
+    );
+
+    if (!outputIndex) {
+      throw Error('BTC tx has no valid output');
+    }
 
     return await this.contract.methods
       .executeIssue(
@@ -171,6 +179,7 @@ export class OneBTCClientHmy implements IOneBTCClient {
         height,
         index,
         '0x' + txBlock.toHex(),
+        outputIndex,
       )
       .send({
         senderAddress,

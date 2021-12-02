@@ -91,7 +91,7 @@ export class BTCNodeClient {
     return block;
   };
 
-  public loadBtcTx = async (txHash: string) => {
+  public loadBtcTx = async (txHash: string): Promise<BTCTx> => {
     const txResponse = await axios.get(`${this.host}/tx/${txHash}`);
     return txResponse.data;
   };
