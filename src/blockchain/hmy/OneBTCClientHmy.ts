@@ -14,6 +14,7 @@ import Web3 from 'web3';
 import { BTCNodeClient } from '../../btcNode';
 import { Transaction } from 'bitcoinjs-lib';
 import utils from 'web3-utils';
+import { getUint32Binary } from './helpers';
 
 interface OneBTCClientHmyParams {
   useOneWallet?: boolean;
@@ -165,6 +166,11 @@ export class OneBTCClientHmy implements IOneBTCClient {
       (output) => output.address === vaultBtcAddress,
     );
 
+    const heightAndIndex = parseInt(
+      getUint32Binary(height) + getUint32Binary(index),
+      2,
+    );
+
     if (!outputIndex) {
       throw Error('BTC tx has no valid output');
     }
@@ -176,8 +182,7 @@ export class OneBTCClientHmy implements IOneBTCClient {
         '0x' + proof,
         // Buffer.from(hex, 'hex'),
         '0x' + hexForTxId,
-        height,
-        index,
+        heightAndIndex,
         '0x' + txBlock.toHex(),
         outputIndex,
       )

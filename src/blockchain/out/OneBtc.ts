@@ -1016,6 +1016,49 @@ export const OneBtc: any = {
           type: 'bytes',
         },
         {
+          internalType: 'uint64',
+          name: 'heightAndIndex',
+          type: 'uint64',
+        },
+        {
+          internalType: 'bytes',
+          name: 'header',
+          type: 'bytes',
+        },
+        {
+          internalType: 'uint256',
+          name: 'outputIndex',
+          type: 'uint256',
+        },
+      ],
+      name: 'executeIssue',
+      outputs: [],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [
+        {
+          internalType: 'address',
+          name: 'requester',
+          type: 'address',
+        },
+        {
+          internalType: 'uint256',
+          name: 'redeemId',
+          type: 'uint256',
+        },
+        {
+          internalType: 'bytes',
+          name: 'merkleProof',
+          type: 'bytes',
+        },
+        {
+          internalType: 'bytes',
+          name: 'rawTx',
+          type: 'bytes',
+        },
+        {
           internalType: 'uint32',
           name: 'height',
           type: 'uint32',
@@ -1030,13 +1073,8 @@ export const OneBtc: any = {
           name: 'header',
           type: 'bytes',
         },
-        {
-          internalType: 'uint256',
-          name: 'outputIndex',
-          type: 'uint256',
-        },
       ],
-      name: 'executeIssue',
+      name: 'executeRedeem',
       outputs: [],
       stateMutability: 'nonpayable',
       type: 'function',

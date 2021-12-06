@@ -13,6 +13,7 @@ import { BTCNodeClient } from '../../btcNode';
 import { Transaction } from 'bitcoinjs-lib';
 import utils from 'web3-utils';
 import BN from 'bn.js';
+import { getUint32Binary } from './helpers';
 
 interface OneBTCClientWeb3Params {
   web3: Web3;
@@ -148,14 +149,18 @@ export class OneBTCClientWeb3 implements IOneBTCClient {
 
     const gasPrice = await this.getGasPrice();
 
+    const heightAndIndex = parseInt(
+      getUint32Binary(height) + getUint32Binary(index),
+      2,
+    );
+
     return await this.contract.methods
       .executeIssue(
         addressHex,
         utils.toBN(issueId),
         '0x' + proof,
         '0x' + hexForTxId,
-        height,
-        index,
+        heightAndIndex,
         '0x' + txBlock.toHex(),
         outputIndex,
       )
