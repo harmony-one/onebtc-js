@@ -40,3 +40,9 @@ export const connectToBrowserWallet: TConnectToOneWallet = async (
     return null;
   };
 };
+
+export const getUint32Binary = (num: number): string => {
+  const numBinaryString = Number(num).toString(2);
+  const zeroArray = [...new Array(32 - numBinaryString.length)].fill(0);
+  return zeroArray.join('') + numBinaryString;
+};

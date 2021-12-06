@@ -400,6 +400,12 @@ export const OneBtc: any = {
     },
     {
       anonymous: false,
+      inputs: [],
+      name: 'LiquidateVault',
+      type: 'event',
+    },
+    {
+      anonymous: false,
       inputs: [
         {
           indexed: false,
@@ -789,7 +795,6 @@ export const OneBtc: any = {
       ],
       stateMutability: 'view',
       type: 'function',
-      constant: true,
     },
     {
       inputs: [
@@ -809,7 +814,44 @@ export const OneBtc: any = {
       ],
       stateMutability: 'view',
       type: 'function',
-      constant: true,
+    },
+    {
+      inputs: [
+        {
+          internalType: 'address',
+          name: 'oldVaultId',
+          type: 'address',
+        },
+        {
+          internalType: 'address',
+          name: 'newVaultId',
+          type: 'address',
+        },
+        {
+          internalType: 'uint256',
+          name: 'btcAmount',
+          type: 'uint256',
+        },
+        {
+          internalType: 'uint256',
+          name: 'collateral',
+          type: 'uint256',
+        },
+        {
+          internalType: 'uint256',
+          name: 'btcPublicKeyX',
+          type: 'uint256',
+        },
+        {
+          internalType: 'uint256',
+          name: 'btcPublicKeyY',
+          type: 'uint256',
+        },
+      ],
+      name: 'acceptReplace',
+      outputs: [],
+      stateMutability: 'payable',
+      type: 'function',
     },
     {
       inputs: [
@@ -834,7 +876,6 @@ export const OneBtc: any = {
       ],
       stateMutability: 'view',
       type: 'function',
-      constant: true,
     },
     {
       inputs: [
@@ -878,52 +919,42 @@ export const OneBtc: any = {
       ],
       stateMutability: 'view',
       type: 'function',
-      constant: true,
     },
     {
       inputs: [
         {
-          internalType: 'uint256',
-          name: 'collateral',
-          type: 'uint256',
+          internalType: 'address',
+          name: 'requester',
+          type: 'address',
         },
         {
           internalType: 'uint256',
-          name: 'threshold',
+          name: 'issueId',
           type: 'uint256',
         },
       ],
-      name: 'calculateMaxWrappedFromCollateralForThreshold',
-      outputs: [
-        {
-          internalType: 'uint256',
-          name: '',
-          type: 'uint256',
-        },
-      ],
-      stateMutability: 'view',
+      name: 'cancelIssue',
+      outputs: [],
+      stateMutability: 'nonpayable',
       type: 'function',
-      constant: true,
     },
     {
       inputs: [
         {
-          internalType: 'uint256',
-          name: 'amount',
-          type: 'uint256',
+          internalType: 'address',
+          name: 'requester',
+          type: 'address',
         },
-      ],
-      name: 'collateralToWrapped',
-      outputs: [
         {
           internalType: 'uint256',
-          name: '',
+          name: 'redeemId',
           type: 'uint256',
         },
       ],
-      stateMutability: 'view',
+      name: 'cancelRedeem',
+      outputs: [],
+      stateMutability: 'nonpayable',
       type: 'function',
-      constant: true,
     },
     {
       inputs: [],
@@ -937,7 +968,6 @@ export const OneBtc: any = {
       ],
       stateMutability: 'view',
       type: 'function',
-      constant: true,
     },
     {
       inputs: [
@@ -964,18 +994,128 @@ export const OneBtc: any = {
       type: 'function',
     },
     {
-      inputs: [],
-      name: 'getExchangeRate',
-      outputs: [
+      inputs: [
+        {
+          internalType: 'address',
+          name: 'requester',
+          type: 'address',
+        },
         {
           internalType: 'uint256',
-          name: '',
+          name: 'issueId',
+          type: 'uint256',
+        },
+        {
+          internalType: 'bytes',
+          name: 'merkleProof',
+          type: 'bytes',
+        },
+        {
+          internalType: 'bytes',
+          name: 'rawTx',
+          type: 'bytes',
+        },
+        {
+          internalType: 'uint64',
+          name: 'heightAndIndex',
+          type: 'uint64',
+        },
+        {
+          internalType: 'bytes',
+          name: 'header',
+          type: 'bytes',
+        },
+        {
+          internalType: 'uint256',
+          name: 'outputIndex',
           type: 'uint256',
         },
       ],
-      stateMutability: 'view',
+      name: 'executeIssue',
+      outputs: [],
+      stateMutability: 'nonpayable',
       type: 'function',
-      constant: true,
+    },
+    {
+      inputs: [
+        {
+          internalType: 'address',
+          name: 'requester',
+          type: 'address',
+        },
+        {
+          internalType: 'uint256',
+          name: 'redeemId',
+          type: 'uint256',
+        },
+        {
+          internalType: 'bytes',
+          name: 'merkleProof',
+          type: 'bytes',
+        },
+        {
+          internalType: 'bytes',
+          name: 'rawTx',
+          type: 'bytes',
+        },
+        {
+          internalType: 'uint32',
+          name: 'height',
+          type: 'uint32',
+        },
+        {
+          internalType: 'uint256',
+          name: 'index',
+          type: 'uint256',
+        },
+        {
+          internalType: 'bytes',
+          name: 'header',
+          type: 'bytes',
+        },
+      ],
+      name: 'executeRedeem',
+      outputs: [],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [
+        {
+          internalType: 'uint256',
+          name: 'replaceId',
+          type: 'uint256',
+        },
+        {
+          internalType: 'bytes',
+          name: 'merkleProof',
+          type: 'bytes',
+        },
+        {
+          internalType: 'bytes',
+          name: 'rawTx',
+          type: 'bytes',
+        },
+        {
+          internalType: 'uint32',
+          name: 'height',
+          type: 'uint32',
+        },
+        {
+          internalType: 'uint256',
+          name: 'index',
+          type: 'uint256',
+        },
+        {
+          internalType: 'bytes',
+          name: 'header',
+          type: 'bytes',
+        },
+      ],
+      name: 'executeReplace',
+      outputs: [],
+      stateMutability: 'nonpayable',
+      type: 'function',
     },
     {
       inputs: [
@@ -1004,6 +1144,24 @@ export const OneBtc: any = {
     {
       inputs: [
         {
+          internalType: 'contract IRelay',
+          name: '_relay',
+          type: 'address',
+        },
+        {
+          internalType: 'contract IExchangeRateOracle',
+          name: '_oracle',
+          type: 'address',
+        },
+      ],
+      name: 'initialize',
+      outputs: [],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [
+        {
           internalType: 'address',
           name: 'vaultId',
           type: 'address',
@@ -1019,7 +1177,6 @@ export const OneBtc: any = {
       ],
       stateMutability: 'view',
       type: 'function',
-      constant: true,
     },
     {
       inputs: [
@@ -1087,34 +1244,13 @@ export const OneBtc: any = {
           type: 'uint256',
         },
         {
-          internalType: 'enum RequestStatus',
+          internalType: 'enum Request.RequestStatus',
           name: 'status',
           type: 'uint8',
         },
       ],
       stateMutability: 'view',
       type: 'function',
-      constant: true,
-    },
-    {
-      inputs: [
-        {
-          internalType: 'address',
-          name: 'vaultId',
-          type: 'address',
-        },
-      ],
-      name: 'issued',
-      outputs: [
-        {
-          internalType: 'uint256',
-          name: '',
-          type: 'uint256',
-        },
-      ],
-      stateMutability: 'view',
-      type: 'function',
-      constant: true,
     },
     {
       inputs: [],
@@ -1122,7 +1258,6 @@ export const OneBtc: any = {
       outputs: [],
       stateMutability: 'payable',
       type: 'function',
-      payable: true,
     },
     {
       inputs: [],
@@ -1136,21 +1271,6 @@ export const OneBtc: any = {
       ],
       stateMutability: 'view',
       type: 'function',
-      constant: true,
-    },
-    {
-      inputs: [],
-      name: 'realy',
-      outputs: [
-        {
-          internalType: 'contract IRelay',
-          name: '',
-          type: 'address',
-        },
-      ],
-      stateMutability: 'view',
-      type: 'function',
-      constant: true,
     },
     {
       inputs: [
@@ -1223,14 +1343,13 @@ export const OneBtc: any = {
           type: 'uint256',
         },
         {
-          internalType: 'enum RequestStatus',
+          internalType: 'enum Request.RequestStatus',
           name: 'status',
           type: 'uint8',
         },
       ],
       stateMutability: 'view',
       type: 'function',
-      constant: true,
     },
     {
       inputs: [
@@ -1249,7 +1368,19 @@ export const OneBtc: any = {
       outputs: [],
       stateMutability: 'payable',
       type: 'function',
-      payable: true,
+    },
+    {
+      inputs: [],
+      name: 'relay',
+      outputs: [
+        {
+          internalType: 'contract IRelay',
+          name: '',
+          type: 'address',
+        },
+      ],
+      stateMutability: 'view',
+      type: 'function',
     },
     {
       inputs: [
@@ -1307,28 +1438,77 @@ export const OneBtc: any = {
           type: 'uint256',
         },
         {
-          internalType: 'enum RequestStatus',
+          internalType: 'enum Request.RequestStatus',
           name: 'status',
           type: 'uint8',
         },
       ],
       stateMutability: 'view',
       type: 'function',
-      constant: true,
     },
     {
-      inputs: [],
-      name: 'secureCollateralThreshold',
-      outputs: [
+      inputs: [
         {
           internalType: 'uint256',
-          name: '',
+          name: 'amountRequested',
+          type: 'uint256',
+        },
+        {
+          internalType: 'address',
+          name: 'vaultId',
+          type: 'address',
+        },
+      ],
+      name: 'requestIssue',
+      outputs: [],
+      stateMutability: 'payable',
+      type: 'function',
+    },
+    {
+      inputs: [
+        {
+          internalType: 'uint256',
+          name: 'amountOneBtc',
+          type: 'uint256',
+        },
+        {
+          internalType: 'address',
+          name: 'btcAddress',
+          type: 'address',
+        },
+        {
+          internalType: 'address',
+          name: 'vaultId',
+          type: 'address',
+        },
+      ],
+      name: 'requestRedeem',
+      outputs: [],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [
+        {
+          internalType: 'address payable',
+          name: 'oldVaultId',
+          type: 'address',
+        },
+        {
+          internalType: 'uint256',
+          name: 'btcAmount',
+          type: 'uint256',
+        },
+        {
+          internalType: 'uint256',
+          name: 'griefingCollateral',
           type: 'uint256',
         },
       ],
-      stateMutability: 'view',
+      name: 'requestReplace',
+      outputs: [],
+      stateMutability: 'payable',
       type: 'function',
-      constant: true,
     },
     {
       inputs: [],
@@ -1342,27 +1522,6 @@ export const OneBtc: any = {
       ],
       stateMutability: 'view',
       type: 'function',
-      constant: true,
-    },
-    {
-      inputs: [
-        {
-          internalType: 'address',
-          name: 'vaultId',
-          type: 'address',
-        },
-      ],
-      name: 'toBeRedeemed',
-      outputs: [
-        {
-          internalType: 'uint256',
-          name: '',
-          type: 'uint256',
-        },
-      ],
-      stateMutability: 'view',
-      type: 'function',
-      constant: true,
     },
     {
       inputs: [],
@@ -1376,7 +1535,6 @@ export const OneBtc: any = {
       ],
       stateMutability: 'view',
       type: 'function',
-      constant: true,
     },
     {
       inputs: [],
@@ -1390,7 +1548,6 @@ export const OneBtc: any = {
       ],
       stateMutability: 'view',
       type: 'function',
-      constant: true,
     },
     {
       inputs: [
@@ -1513,35 +1670,13 @@ export const OneBtc: any = {
           name: 'toBeReplaced',
           type: 'uint256',
         },
-      ],
-      stateMutability: 'view',
-      type: 'function',
-      constant: true,
-    },
-    {
-      inputs: [
         {
           internalType: 'uint256',
-          name: 'amount',
+          name: 'liquidatedCollateral',
           type: 'uint256',
         },
       ],
-      name: 'withdrawCollateral',
-      outputs: [],
-      stateMutability: 'nonpayable',
-      type: 'function',
-    },
-    {
-      inputs: [
-        {
-          internalType: 'contract IRelay',
-          name: '_relay',
-          type: 'address',
-        },
-      ],
-      name: 'initialize',
-      outputs: [],
-      stateMutability: 'nonpayable',
+      stateMutability: 'view',
       type: 'function',
     },
     {
@@ -1587,263 +1722,11 @@ export const OneBtc: any = {
       inputs: [
         {
           internalType: 'uint256',
-          name: 'amountRequested',
-          type: 'uint256',
-        },
-        {
-          internalType: 'address',
-          name: 'vaultId',
-          type: 'address',
-        },
-      ],
-      name: 'requestIssue',
-      outputs: [],
-      stateMutability: 'payable',
-      type: 'function',
-      payable: true,
-    },
-    {
-      inputs: [
-        {
-          internalType: 'address',
-          name: 'requester',
-          type: 'address',
-        },
-        {
-          internalType: 'uint256',
-          name: 'issueId',
-          type: 'uint256',
-        },
-        {
-          internalType: 'bytes',
-          name: 'merkleProof',
-          type: 'bytes',
-        },
-        {
-          internalType: 'bytes',
-          name: 'rawTx',
-          type: 'bytes',
-        },
-        {
-          internalType: 'uint32',
-          name: 'height',
-          type: 'uint32',
-        },
-        {
-          internalType: 'uint256',
-          name: 'index',
-          type: 'uint256',
-        },
-        {
-          internalType: 'bytes',
-          name: 'header',
-          type: 'bytes',
-        },
-      ],
-      name: 'executeIssue',
-      outputs: [],
-      stateMutability: 'nonpayable',
-      type: 'function',
-    },
-    {
-      inputs: [
-        {
-          internalType: 'address',
-          name: 'requester',
-          type: 'address',
-        },
-        {
-          internalType: 'uint256',
-          name: 'issueId',
+          name: 'amount',
           type: 'uint256',
         },
       ],
-      name: 'cancelIssue',
-      outputs: [],
-      stateMutability: 'nonpayable',
-      type: 'function',
-    },
-    {
-      inputs: [
-        {
-          internalType: 'uint256',
-          name: 'amountOneBtc',
-          type: 'uint256',
-        },
-        {
-          internalType: 'address',
-          name: 'btcAddress',
-          type: 'address',
-        },
-        {
-          internalType: 'address',
-          name: 'vaultId',
-          type: 'address',
-        },
-      ],
-      name: 'requestRedeem',
-      outputs: [],
-      stateMutability: 'nonpayable',
-      type: 'function',
-    },
-    {
-      inputs: [
-        {
-          internalType: 'address',
-          name: 'requester',
-          type: 'address',
-        },
-        {
-          internalType: 'uint256',
-          name: 'redeemId',
-          type: 'uint256',
-        },
-        {
-          internalType: 'bytes',
-          name: 'merkleProof',
-          type: 'bytes',
-        },
-        {
-          internalType: 'bytes',
-          name: 'rawTx',
-          type: 'bytes',
-        },
-        {
-          internalType: 'uint32',
-          name: 'height',
-          type: 'uint32',
-        },
-        {
-          internalType: 'uint256',
-          name: 'index',
-          type: 'uint256',
-        },
-        {
-          internalType: 'bytes',
-          name: 'header',
-          type: 'bytes',
-        },
-      ],
-      name: 'executeRedeem',
-      outputs: [],
-      stateMutability: 'nonpayable',
-      type: 'function',
-    },
-    {
-      inputs: [
-        {
-          internalType: 'address',
-          name: 'requester',
-          type: 'address',
-        },
-        {
-          internalType: 'uint256',
-          name: 'redeemId',
-          type: 'uint256',
-        },
-      ],
-      name: 'cancelRedeem',
-      outputs: [],
-      stateMutability: 'nonpayable',
-      type: 'function',
-    },
-    {
-      inputs: [
-        {
-          internalType: 'address payable',
-          name: 'oldVaultId',
-          type: 'address',
-        },
-        {
-          internalType: 'uint256',
-          name: 'btcAmount',
-          type: 'uint256',
-        },
-        {
-          internalType: 'uint256',
-          name: 'griefingCollateral',
-          type: 'uint256',
-        },
-      ],
-      name: 'requestReplace',
-      outputs: [],
-      stateMutability: 'payable',
-      type: 'function',
-      payable: true,
-    },
-    {
-      inputs: [
-        {
-          internalType: 'address',
-          name: 'oldVaultId',
-          type: 'address',
-        },
-        {
-          internalType: 'address',
-          name: 'newVaultId',
-          type: 'address',
-        },
-        {
-          internalType: 'uint256',
-          name: 'btcAmount',
-          type: 'uint256',
-        },
-        {
-          internalType: 'uint256',
-          name: 'collateral',
-          type: 'uint256',
-        },
-        {
-          internalType: 'uint256',
-          name: 'btcPublicKeyX',
-          type: 'uint256',
-        },
-        {
-          internalType: 'uint256',
-          name: 'btcPublicKeyY',
-          type: 'uint256',
-        },
-      ],
-      name: 'acceptReplace',
-      outputs: [],
-      stateMutability: 'payable',
-      type: 'function',
-      payable: true,
-    },
-    {
-      inputs: [
-        {
-          internalType: 'uint256',
-          name: 'replaceId',
-          type: 'uint256',
-        },
-        {
-          internalType: 'bytes',
-          name: 'merkleProof',
-          type: 'bytes',
-        },
-        {
-          internalType: 'bytes',
-          name: 'rawTx',
-          type: 'bytes',
-        },
-        {
-          internalType: 'uint32',
-          name: 'height',
-          type: 'uint32',
-        },
-        {
-          internalType: 'uint256',
-          name: 'index',
-          type: 'uint256',
-        },
-        {
-          internalType: 'bytes',
-          name: 'header',
-          type: 'bytes',
-        },
-      ],
-      name: 'executeReplace',
+      name: 'withdrawCollateral',
       outputs: [],
       stateMutability: 'nonpayable',
       type: 'function',

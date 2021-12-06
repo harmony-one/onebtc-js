@@ -13,6 +13,7 @@ import { BTCNodeClient } from '../../btcNode';
 import { Transaction } from 'bitcoinjs-lib';
 import utils from 'web3-utils';
 import BN from 'bn.js';
+import { getUint32Binary } from './helpers';
 
 interface OneBTCClientWeb3Params {
   web3: Web3;
@@ -123,6 +124,7 @@ export class OneBTCClientWeb3 implements IOneBTCClient {
     requesterAddress: string,
     issueId: string,
     btcTxHash: string,
+    vaultBtcAddress: string,
     sendTxCallback?: (hash: string) => void,
   ): Promise<TransactionReceipt> => {
     const addressHex = this._prepareAddress(requesterAddress);
@@ -135,10 +137,22 @@ export class OneBTCClientWeb3 implements IOneBTCClient {
     const tx = Transaction.fromHex(hex);
     // @ts-expect-error TS2341: Property '__toBuffer' is private and only accessible within class 'Transaction'.
     const hexForTxId = tx.__toBuffer().toString('hex');
+    const outputIndex = btcTx.outputs.findIndex(
+      (output) => output.address === vaultBtcAddress,
+    );
+
+    if (!outputIndex) {
+      throw Error('BTC tx has no valid output');
+    }
 
     const senderAddress = await this.getSenderAddress();
 
     const gasPrice = await this.getGasPrice();
+
+    const heightAndIndex = parseInt(
+      getUint32Binary(height) + getUint32Binary(index),
+      2,
+    );
 
     return await this.contract.methods
       .executeIssue(
@@ -146,9 +160,9 @@ export class OneBTCClientWeb3 implements IOneBTCClient {
         utils.toBN(issueId),
         '0x' + proof,
         '0x' + hexForTxId,
-        height,
-        index,
+        heightAndIndex,
         '0x' + txBlock.toHex(),
+        outputIndex,
       )
       .send({
         from: senderAddress,
