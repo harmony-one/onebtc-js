@@ -141,7 +141,7 @@ export class OneBTCClientWeb3 implements IOneBTCClient {
       (output) => output.address === vaultBtcAddress,
     );
 
-    if (!outputIndex) {
+    if (outputIndex === -1) {
       throw Error('BTC tx has no valid output');
     }
 
