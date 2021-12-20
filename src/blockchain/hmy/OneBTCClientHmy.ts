@@ -137,6 +137,24 @@ export class OneBTCClientHmy implements IOneBTCClient {
       .then(this._responseHandler);
   };
 
+  cancelRedeem = async (
+    requesterAddress: string,
+    redeemId: number | string,
+    sendTxCallback?: SendTxCallback,
+  ) => {
+    const addressHex = this._prepareAddress(requesterAddress);
+    const senderAddress = await this.getSenderAddress();
+    return await this.contract.methods
+      .cancelRedeem(addressHex, utils.toBN(redeemId))
+      .send({
+        from: senderAddress,
+        gasLimit: this.options.gasLimit,
+        gasPrice: this.options.gasPrice,
+      })
+      .on('transactionHash', sendTxCallback)
+      .then(this._responseHandler);
+  };
+
   getIssueStatus = (
     requesterAddress: string,
     issueId: string,

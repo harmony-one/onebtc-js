@@ -118,6 +118,12 @@ export default interface IOneBTCClient {
     sendTxCallback?: SendTxCallback,
   ): Promise<TransactionReceipt>;
 
+  cancelRedeem(
+    requester: string,
+    issueId: string,
+    sendTxCallback?: SendTxCallback,
+  ): Promise<TransactionReceipt>;
+
   getIssueId(requester: string): Promise<any>;
 
   transfer(

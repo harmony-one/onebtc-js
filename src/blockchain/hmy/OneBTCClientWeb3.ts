@@ -192,6 +192,26 @@ export class OneBTCClientWeb3 implements IOneBTCClient {
       .on('transactionHash', sendTxCallback || emptyFunction);
   };
 
+  cancelRedeem = async (
+    requesterAddress: string,
+    redeemId: number | string,
+    sendTxCallback?: (hash: string) => void,
+  ): Promise<TransactionReceipt> => {
+    const addressHex = this._prepareAddress(requesterAddress);
+    const senderAddress = await this.getSenderAddress();
+
+    const gasPrice = await this.getGasPrice();
+
+    return await this.contract.methods
+      .cancelRedeem(addressHex, utils.toBN(redeemId))
+      .send({
+        from: senderAddress,
+        gasLimit: this.options.gasLimit,
+        gasPrice,
+      })
+      .on('transactionHash', sendTxCallback || emptyFunction);
+  };
+
   getIssueId = async (requesterAddress: string) => {
     const addressHex = this._prepareAddress(requesterAddress);
 
