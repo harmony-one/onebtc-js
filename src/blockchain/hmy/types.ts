@@ -100,6 +100,7 @@ export default interface IOneBTCClient {
   requestIssue(
     amount: number,
     vaultAddress: string,
+    oneAmount: string,
     sendTxCallback?: SendTxCallback,
   ): Promise<IssueDetails>;
   getRedeemStatus(requester: string, redeemId: string): Promise<RedeemStatus>;

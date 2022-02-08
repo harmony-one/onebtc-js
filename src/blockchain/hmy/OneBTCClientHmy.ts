@@ -394,6 +394,7 @@ export class OneBTCClientHmy implements IOneBTCClient {
   requestIssue = async (
     amount: number,
     vaultAddress: string,
+    oneAmount: string,
     sendTxCallback?: SendTxCallback,
   ): Promise<IssueDetails> => {
     const addressHex = this._prepareAddress(vaultAddress);
@@ -405,7 +406,7 @@ export class OneBTCClientHmy implements IOneBTCClient {
         from: senderAddress,
         gasLimit: this.options.gasLimit,
         gasPrice: this.options.gasPrice,
-        value: utils.toBN(amount),
+        value: utils.toBN(oneAmount),
       })
       .on('transactionHash', sendTxCallback)
       .then(this._responseHandler)
