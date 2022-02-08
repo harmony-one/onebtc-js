@@ -950,10 +950,53 @@ export const OneBtc: any = {
           name: 'redeemId',
           type: 'uint256',
         },
+        {
+          internalType: 'bool',
+          name: 'reimburse',
+          type: 'bool',
+        },
       ],
       name: 'cancelRedeem',
       outputs: [],
       stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [
+        {
+          internalType: 'uint256',
+          name: 'amount',
+          type: 'uint256',
+        },
+      ],
+      name: 'collateralFor',
+      outputs: [
+        {
+          internalType: 'uint256',
+          name: '',
+          type: 'uint256',
+        },
+      ],
+      stateMutability: 'view',
+      type: 'function',
+    },
+    {
+      inputs: [
+        {
+          internalType: 'uint256',
+          name: 'amount',
+          type: 'uint256',
+        },
+      ],
+      name: 'collateralForIssued',
+      outputs: [
+        {
+          internalType: 'uint256',
+          name: '',
+          type: 'uint256',
+        },
+      ],
+      stateMutability: 'view',
       type: 'function',
     },
     {
