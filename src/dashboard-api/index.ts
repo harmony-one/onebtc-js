@@ -87,6 +87,13 @@ export class DashboardApi {
     return res.data;
   };
 
+  addEvent = async (hash: string) => {
+    const res = await axios.post(`${this.dashboardUrl}/events/add-by-hash`, {
+      hash,
+    });
+    return res.data;
+  };
+
   loadData = async (dataType: DATA_TYPE, entityId: string) => {
     const res = await axios.get(
       `${this.dashboardUrl}/${dataType}/data/${entityId}`,
