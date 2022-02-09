@@ -101,6 +101,17 @@ export interface IListContainer<T> {
   page: number;
 }
 
+export interface IRelayInfo {
+  synced: boolean;
+  height: number;
+  readonly: boolean;
+  status: string;
+  lastError: string;
+  relayContractAddress: string;
+  btcNodeUrl: string;
+  hmyNodeUrl: string;
+}
+
 export interface IBtcRelayInfo {
   totalLogs: number;
   progress: string;

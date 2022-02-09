@@ -11,6 +11,7 @@ import {
   IIssue,
   IListContainer,
   IRedeem,
+  IRelayInfo,
   IVault,
 } from './interfaces';
 import { getActualOutputs } from './helpers';
@@ -190,6 +191,12 @@ export class DashboardApi {
       content: content,
       totalElements: content.length,
     };
+  };
+
+  public loadRelayInfo = async (): Promise<IRelayInfo> => {
+    const res = await axios.get(this.dashboardUrl + '/relay/info');
+
+    return res.data;
   };
 
   public loadInfo = async (): Promise<IBtcRelayInfo> => {
