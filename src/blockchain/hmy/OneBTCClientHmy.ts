@@ -140,12 +140,13 @@ export class OneBTCClientHmy implements IOneBTCClient {
   cancelRedeem = async (
     requesterAddress: string,
     redeemId: number | string,
+    reimburse = true,
     sendTxCallback?: SendTxCallback,
   ) => {
     const addressHex = this._prepareAddress(requesterAddress);
     const senderAddress = await this.getSenderAddress();
     return await this.contract.methods
-      .cancelRedeem(addressHex, utils.toBN(redeemId))
+      .cancelRedeem(addressHex, utils.toBN(redeemId), reimburse)
       .send({
         from: senderAddress,
         gasLimit: this.options.gasLimit,

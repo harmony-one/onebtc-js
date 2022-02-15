@@ -122,6 +122,7 @@ export default interface IOneBTCClient {
   cancelRedeem(
     requester: string,
     issueId: string,
+    reimburse: boolean,
     sendTxCallback?: SendTxCallback,
   ): Promise<TransactionReceipt>;
 

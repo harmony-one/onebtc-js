@@ -196,6 +196,7 @@ export class OneBTCClientWeb3 implements IOneBTCClient {
   cancelRedeem = async (
     requesterAddress: string,
     redeemId: number | string,
+    reimburse = true,
     sendTxCallback?: (hash: string) => void,
   ): Promise<TransactionReceipt> => {
     const addressHex = this._prepareAddress(requesterAddress);
@@ -204,7 +205,7 @@ export class OneBTCClientWeb3 implements IOneBTCClient {
     const gasPrice = await this.getGasPrice();
 
     return await this.contract.methods
-      .cancelRedeem(addressHex, utils.toBN(redeemId))
+      .cancelRedeem(addressHex, utils.toBN(redeemId), reimburse)
       .send({
         from: senderAddress,
         gasLimit: this.options.gasLimit,
