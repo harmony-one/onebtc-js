@@ -39,20 +39,18 @@ export class BTCNodeClient {
 
     let index = -1;
     const txs = [];
-    for (const [i, tx] of Object.entries(block.txs)) {
-      // @ts-expect-error TS2339: Property 'hash' does not exist on type 'unknown'.
-      if (tx.hash === txid) {
-        // @ts-expect-error TS2362: The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+    for (let i = 0; i < block.tx.length; i++) {
+      const txHash = block.tx[i];
+      if (txHash === txid) {
         index = i >>> 0;
       } // cast to uint from string
-      // @ts-expect-error TS2339: Property 'hash' does not exist on type 'unknown'.
-      txs.push(Buffer.from(tx.hash as string, 'hex').reverse());
+      txs.push(Buffer.from(txHash as string, 'hex').reverse());
     }
 
     assert(index >= 0, 'Transaction not in block.');
 
     const [root] = merkle.createRoot(hash256, txs.slice());
-    assert.bufferEqual(Buffer.from(block.merkleRoot, 'hex').reverse(), root);
+    assert.bufferEqual(Buffer.from(block.merkleroot, 'hex').reverse(), root);
 
     const branch = merkle.createBranch(hash256, index, txs.slice());
 
@@ -97,8 +95,23 @@ export class BTCNodeClient {
   };
 
   private _loadBlockByHeight = async (height: number) => {
-    const result = await axios.get(`${this.host}/block/${height}`);
-    return result.data;
+    const r = await axios.post(
+      `${this.host}`,
+      JSON.stringify({
+        method: 'getblockbyheight',
+        params: [height, true, false],
+      }),
+      {
+        transformRequest: [
+          (data, headers) => {
+            delete headers.post['Content-Type'];
+            return data;
+          },
+        ],
+      },
+    );
+
+    return r.data.result;
   };
 
   public loadTxsByAddress = async (bech32Address: string) => {
