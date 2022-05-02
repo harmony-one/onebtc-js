@@ -515,4 +515,27 @@ export class OneBTCClientHmy implements IOneBTCClient {
       .on('transactionHash', sendTxCallback)
       .then(this._responseHandler);
   };
+
+  extendVaultLockPeriod = async (
+    vaultId: string,
+    lockPeriod: number,
+    sendTxCallback: SendTxCallback,
+  ) => {
+    throw new Error('not implemented');
+  };
+
+  getVaultLockExpireAt = async (
+    vaultId: string,
+    sendTxCallback: SendTxCallback,
+  ) => {
+    throw new Error('not implemented');
+  };
+
+  lockedVaults = async (vaultId: string) => {
+    throw new Error('not implemented');
+  };
+
+  updateVaultAccClaimableRewards = async (vaultId: string) => {
+    throw new Error('not implemented');
+  };
 }

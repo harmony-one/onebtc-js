@@ -165,4 +165,19 @@ export default interface IOneBTCClient {
 
   getIssueDetails(txHash: string): Promise<IssueDetails | void>;
   getRedeemDetails(txHash: string): Promise<RedeemDetails | void>;
+
+  extendVaultLockPeriod(
+    vaultId: string,
+    lockPeriod: number,
+    sendTxCallback: SendTxCallback,
+  ): Promise<TransactionReceipt>;
+
+  getVaultLockExpireAt(
+    lockPeriod: string,
+    sendTxCallback: SendTxCallback,
+  ): Promise<TransactionReceipt>;
+
+  lockedVaults(vaultId: string): Promise<TransactionReceipt>;
+
+  updateVaultAccClaimableRewards(vaultId: string): Promise<TransactionReceipt>;
 }

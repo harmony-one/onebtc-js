@@ -658,6 +658,19 @@ export const OneBtc: any = {
         {
           indexed: true,
           internalType: 'address',
+          name: 'vaultId',
+          type: 'address',
+        },
+      ],
+      name: 'ReportVaultTheft',
+      type: 'event',
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: true,
+          internalType: 'address',
           name: 'oldVault',
           type: 'address',
         },
@@ -725,6 +738,31 @@ export const OneBtc: any = {
         },
       ],
       name: 'Transfer',
+      type: 'event',
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: true,
+          internalType: 'address',
+          name: 'vaultId',
+          type: 'address',
+        },
+        {
+          indexed: false,
+          internalType: 'bytes32',
+          name: 'leftTxId',
+          type: 'bytes32',
+        },
+        {
+          indexed: false,
+          internalType: 'bytes32',
+          name: 'rightTxId',
+          type: 'bytes32',
+        },
+      ],
+      name: 'VaultDoublePayment',
       type: 'event',
     },
     {
@@ -813,44 +851,6 @@ export const OneBtc: any = {
         },
       ],
       stateMutability: 'view',
-      type: 'function',
-    },
-    {
-      inputs: [
-        {
-          internalType: 'address',
-          name: 'oldVaultId',
-          type: 'address',
-        },
-        {
-          internalType: 'address',
-          name: 'newVaultId',
-          type: 'address',
-        },
-        {
-          internalType: 'uint256',
-          name: 'btcAmount',
-          type: 'uint256',
-        },
-        {
-          internalType: 'uint256',
-          name: 'collateral',
-          type: 'uint256',
-        },
-        {
-          internalType: 'uint256',
-          name: 'btcPublicKeyX',
-          type: 'uint256',
-        },
-        {
-          internalType: 'uint256',
-          name: 'btcPublicKeyY',
-          type: 'uint256',
-        },
-      ],
-      name: 'acceptReplace',
-      outputs: [],
-      stateMutability: 'payable',
       type: 'function',
     },
     {
@@ -1125,39 +1125,60 @@ export const OneBtc: any = {
     {
       inputs: [
         {
-          internalType: 'uint256',
-          name: 'replaceId',
-          type: 'uint256',
-        },
-        {
-          internalType: 'bytes',
-          name: 'merkleProof',
-          type: 'bytes',
-        },
-        {
-          internalType: 'bytes',
-          name: 'rawTx',
-          type: 'bytes',
-        },
-        {
-          internalType: 'uint32',
-          name: 'height',
-          type: 'uint32',
-        },
-        {
-          internalType: 'uint256',
-          name: 'index',
-          type: 'uint256',
-        },
-        {
-          internalType: 'bytes',
-          name: 'header',
-          type: 'bytes',
+          internalType: 'address',
+          name: '_vaultId',
+          type: 'address',
         },
       ],
-      name: 'executeReplace',
-      outputs: [],
-      stateMutability: 'nonpayable',
+      name: 'getVault',
+      outputs: [
+        {
+          internalType: 'uint256',
+          name: '',
+          type: 'uint256',
+        },
+        {
+          internalType: 'uint256',
+          name: '',
+          type: 'uint256',
+        },
+        {
+          internalType: 'uint256',
+          name: '',
+          type: 'uint256',
+        },
+        {
+          internalType: 'uint256',
+          name: '',
+          type: 'uint256',
+        },
+        {
+          internalType: 'uint256',
+          name: '',
+          type: 'uint256',
+        },
+        {
+          internalType: 'uint256',
+          name: '',
+          type: 'uint256',
+        },
+        {
+          internalType: 'uint256',
+          name: '',
+          type: 'uint256',
+        },
+        {
+          internalType: 'uint256',
+          name: '',
+          type: 'uint256',
+        },
+        {
+          internalType: 'uint256',
+          name: '',
+          type: 'uint256',
+        },
+      ],
+      stateMutability: 'view',
       type: 'function',
     },
     {
@@ -1200,6 +1221,19 @@ export const OneBtc: any = {
       name: 'initialize',
       outputs: [],
       stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [],
+      name: 'isSetVaultReward',
+      outputs: [
+        {
+          internalType: 'bool',
+          name: '',
+          type: 'bool',
+        },
+      ],
+      stateMutability: 'view',
       type: 'function',
     },
     {
@@ -1303,6 +1337,19 @@ export const OneBtc: any = {
       type: 'function',
     },
     {
+      inputs: [
+        {
+          internalType: 'address',
+          name: '_vaultId',
+          type: 'address',
+        },
+      ],
+      name: 'lockAdditionalCollateralFromVaultReward',
+      outputs: [],
+      stateMutability: 'payable',
+      type: 'function',
+    },
+    {
       inputs: [],
       name: 'name',
       outputs: [
@@ -1310,6 +1357,19 @@ export const OneBtc: any = {
           internalType: 'string',
           name: '',
           type: 'string',
+        },
+      ],
+      stateMutability: 'view',
+      type: 'function',
+    },
+    {
+      inputs: [],
+      name: 'oracle',
+      outputs: [
+        {
+          internalType: 'contract IExchangeRateOracle',
+          name: '',
+          type: 'address',
         },
       ],
       stateMutability: 'view',
@@ -1492,6 +1552,77 @@ export const OneBtc: any = {
     {
       inputs: [
         {
+          internalType: 'address',
+          name: 'vaultId',
+          type: 'address',
+        },
+        {
+          internalType: 'bytes',
+          name: 'rawTxs',
+          type: 'bytes',
+        },
+        {
+          internalType: 'uint64[]',
+          name: 'heightAndIndexs',
+          type: 'uint64[]',
+        },
+        {
+          internalType: 'bytes',
+          name: 'merkleProofs',
+          type: 'bytes',
+        },
+        {
+          internalType: 'bytes',
+          name: 'headers',
+          type: 'bytes',
+        },
+      ],
+      name: 'reportVaultDoublePayment',
+      outputs: [],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [
+        {
+          internalType: 'address',
+          name: 'vaultId',
+          type: 'address',
+        },
+        {
+          internalType: 'bytes',
+          name: 'rawTx',
+          type: 'bytes',
+        },
+        {
+          internalType: 'uint32',
+          name: 'height',
+          type: 'uint32',
+        },
+        {
+          internalType: 'uint256',
+          name: 'index',
+          type: 'uint256',
+        },
+        {
+          internalType: 'bytes',
+          name: 'merkleProof',
+          type: 'bytes',
+        },
+        {
+          internalType: 'bytes',
+          name: 'header',
+          type: 'bytes',
+        },
+      ],
+      name: 'reportVaultTheft',
+      outputs: [],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [
+        {
           internalType: 'uint256',
           name: 'amountRequested',
           type: 'uint256',
@@ -1533,24 +1664,14 @@ export const OneBtc: any = {
     {
       inputs: [
         {
-          internalType: 'address payable',
-          name: 'oldVaultId',
+          internalType: 'address',
+          name: '_vaultReward',
           type: 'address',
         },
-        {
-          internalType: 'uint256',
-          name: 'btcAmount',
-          type: 'uint256',
-        },
-        {
-          internalType: 'uint256',
-          name: 'griefingCollateral',
-          type: 'uint256',
-        },
       ],
-      name: 'requestReplace',
+      name: 'setVaultRewardAddress',
       outputs: [],
-      stateMutability: 'payable',
+      stateMutability: 'nonpayable',
       type: 'function',
     },
     {
@@ -1561,6 +1682,25 @@ export const OneBtc: any = {
           internalType: 'string',
           name: '',
           type: 'string',
+        },
+      ],
+      stateMutability: 'view',
+      type: 'function',
+    },
+    {
+      inputs: [
+        {
+          internalType: 'bytes32',
+          name: '',
+          type: 'bytes32',
+        },
+      ],
+      name: 'theftReports',
+      outputs: [
+        {
+          internalType: 'bool',
+          name: '',
+          type: 'bool',
         },
       ],
       stateMutability: 'view',
@@ -1661,6 +1801,19 @@ export const OneBtc: any = {
       name: 'updatePublicKey',
       outputs: [],
       stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [],
+      name: 'vaultReward',
+      outputs: [
+        {
+          internalType: 'address',
+          name: '',
+          type: 'address',
+        },
+      ],
+      stateMutability: 'view',
       type: 'function',
     },
     {
