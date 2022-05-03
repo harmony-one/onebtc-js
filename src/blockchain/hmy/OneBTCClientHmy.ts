@@ -524,10 +524,7 @@ export class OneBTCClientHmy implements IOneBTCClient {
     throw new Error('not implemented');
   };
 
-  getVaultLockExpireAt = async (
-    vaultId: string,
-    sendTxCallback: SendTxCallback,
-  ) => {
+  getVaultLockExpireAt = async (vaultId: string) => {
     throw new Error('not implemented');
   };
 

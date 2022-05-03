@@ -10,7 +10,7 @@ export interface IClientParams {
   chainId: number;
   btcNodeUrl: string;
   contractAddress: string;
-  rewardContractAddress: string;
+  stakingContractAddress: string;
   gasLimit?: number;
   gasPrice?: number;
 }
@@ -44,7 +44,7 @@ export const createClientWeb3 = async (params: IClientWeb3Params) => {
     useMetamask: params.useMetamask,
     web3,
     contractAddress: params.contractAddress,
-    rewardContractAddress: params.rewardContractAddress,
+    stakingContractAddress: params.stakingContractAddress,
     nodeURL: params.nodeURL,
     btcNodeClient,
   });

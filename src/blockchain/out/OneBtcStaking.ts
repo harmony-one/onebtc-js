@@ -1,4 +1,4 @@
-export const OneBtcReward: any = {
+export const OneBtcStaking: any = {
   abi: [
     {
       anonymous: false,

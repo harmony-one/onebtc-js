@@ -14,14 +14,14 @@ import { Transaction } from 'bitcoinjs-lib';
 import utils from 'web3-utils';
 import BN from 'bn.js';
 import { getUint32Binary } from './helpers';
-import { OneBtcReward } from '../out/OneBtcReward';
+import { OneBtcStaking } from '../out/OneBtcStaking';
 
 interface OneBTCClientWeb3Params {
   web3: Web3;
   useMetamask?: boolean;
 
   contractAddress: string;
-  rewardContractAddress: string;
+  stakingContractAddress: string;
   nodeURL: string;
   btcNodeClient: BTCNodeClient;
   options?: { gasPrice: number; gasLimit: number };
@@ -33,11 +33,11 @@ export class OneBTCClientWeb3 implements IOneBTCClient {
   public web3: Web3;
 
   public contract: Contract;
-  public rewardContract: Contract;
+  public stakingContract: Contract;
   public btcNodeClient: BTCNodeClient;
 
   public contractAddress: string;
-  public rewardContractAddress: string;
+  public stakingContractAddress: string;
   private options = { gasPrice: 1000000000, gasLimit: 6721900 };
   private _useMetamask = false;
   private _accountAddress: string = null;
@@ -45,7 +45,7 @@ export class OneBTCClientWeb3 implements IOneBTCClient {
   constructor(params: OneBTCClientWeb3Params) {
     this.web3 = params.web3;
     this.contractAddress = params.contractAddress;
-    this.rewardContractAddress = params.rewardContractAddress;
+    this.stakingContractAddress = params.stakingContractAddress;
 
     this.btcNodeClient = params.btcNodeClient;
 
@@ -62,9 +62,9 @@ export class OneBTCClientWeb3 implements IOneBTCClient {
       this.contractAddress,
     );
 
-    this.rewardContract = new this.web3.eth.Contract(
-      OneBtcReward.abi,
-      '0x2bB7642EcbEC83Aa4D5B16A15AB8711E21c74005',
+    this.stakingContract = new this.web3.eth.Contract(
+      OneBtcStaking.abi,
+      this.stakingContractAddress,
     );
   };
 
@@ -450,7 +450,7 @@ export class OneBTCClientWeb3 implements IOneBTCClient {
     const senderAddress = await this.getSenderAddress();
 
     const gasPrice = await this.getGasPrice();
-    return await this.rewardContract.methods
+    return await this.stakingContract.methods
       .extendVaultLockPeriod(addressHex, lockPeriod)
       .send({
         from: senderAddress,
@@ -465,7 +465,7 @@ export class OneBTCClientWeb3 implements IOneBTCClient {
     const senderAddress = await this.getSenderAddress();
 
     const gasPrice = await this.getGasPrice();
-    return await this.rewardContract.methods
+    return await this.stakingContract.methods
       .claimRewards(addressHex)
       .send({
         from: senderAddress,
@@ -483,7 +483,7 @@ export class OneBTCClientWeb3 implements IOneBTCClient {
     const senderAddress = await this.getSenderAddress();
 
     const gasPrice = await this.getGasPrice();
-    return await this.rewardContract.methods
+    return await this.stakingContract.methods
       .claimRewardsAndLock(addressHex)
       .send({
         from: senderAddress,
@@ -501,7 +501,7 @@ export class OneBTCClientWeb3 implements IOneBTCClient {
     const senderAddress = await this.getSenderAddress();
 
     const gasPrice = await this.getGasPrice();
-    return await this.rewardContract.methods
+    return await this.stakingContract.methods
       .getClaimableRewards(addressHex)
       .send({
         from: senderAddress,
@@ -511,24 +511,21 @@ export class OneBTCClientWeb3 implements IOneBTCClient {
       .on('transactionHash', sendTxCallback);
   };
 
-  getVaultLockExpireAt = async (
-    vaultId: string,
-    sendTxCallback: SendTxCallback,
-  ) => {
+  getVaultLockExpireAt = async (vaultId: string) => {
     const addressHex = this._prepareAddress(vaultId);
-    return await this.rewardContract.methods
+    return await this.stakingContract.methods
       .getVaultLockExpireAt(addressHex)
       .call();
   };
 
   lockedVaults = async (vaultId: string) => {
     const addressHex = this._prepareAddress(vaultId);
-    return await this.rewardContract.methods.lockedVaults(addressHex).call();
+    return await this.stakingContract.methods.lockedVaults(addressHex).call();
   };
 
   updateVaultAccClaimableRewards = async (vaultId: string) => {
     const addressHex = this._prepareAddress(vaultId);
-    return await this.rewardContract.methods
+    return await this.stakingContract.methods
       .updateVaultAccClaimableRewards(addressHex)
       .call();
   };

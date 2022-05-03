@@ -172,10 +172,7 @@ export default interface IOneBTCClient {
     sendTxCallback: SendTxCallback,
   ): Promise<TransactionReceipt>;
 
-  getVaultLockExpireAt(
-    lockPeriod: string,
-    sendTxCallback: SendTxCallback,
-  ): Promise<TransactionReceipt>;
+  getVaultLockExpireAt(lockPeriod: string): Promise<TransactionReceipt>;
 
   lockedVaults(vaultId: string): Promise<TransactionReceipt>;
 
