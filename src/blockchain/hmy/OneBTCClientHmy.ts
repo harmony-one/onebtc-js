@@ -535,4 +535,19 @@ export class OneBTCClientHmy implements IOneBTCClient {
   updateVaultAccClaimableRewards = async (vaultId: string) => {
     throw new Error('not implemented');
   };
+
+  getClaimableRewards = async (vaultId: string) => {
+    throw new Error('not implemented');
+  };
+
+  claimRewards = async (vaultId: string, sendTxCallback: SendTxCallback) => {
+    throw new Error('not implemented');
+  };
+
+  claimRewardsAndLock = async (
+    vaultId: string,
+    sendTxCallback: SendTxCallback,
+  ) => {
+    throw new Error('not implemented');
+  };
 }

@@ -493,22 +493,12 @@ export class OneBTCClientWeb3 implements IOneBTCClient {
       .on('transactionHash', sendTxCallback);
   };
 
-  getClaimableRewards = async (
-    vaultId: string,
-    sendTxCallback: SendTxCallback,
-  ) => {
+  getClaimableRewards = async (vaultId: string) => {
     const addressHex = this._prepareAddress(vaultId);
-    const senderAddress = await this.getSenderAddress();
 
-    const gasPrice = await this.getGasPrice();
     return await this.stakingContract.methods
       .getClaimableRewards(addressHex)
-      .send({
-        from: senderAddress,
-        gasLimit: this.options.gasLimit,
-        gasPrice,
-      })
-      .on('transactionHash', sendTxCallback);
+      .call();
   };
 
   getVaultLockExpireAt = async (vaultId: string) => {

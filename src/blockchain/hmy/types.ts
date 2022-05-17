@@ -177,4 +177,13 @@ export default interface IOneBTCClient {
   lockedVaults(vaultId: string): Promise<TransactionReceipt>;
 
   updateVaultAccClaimableRewards(vaultId: string): Promise<TransactionReceipt>;
+
+  claimRewardsAndLock(
+    vaultId: string,
+    sendTxCallback: SendTxCallback,
+  ): Promise<TransactionReceipt>;
+  claimRewards(
+    vaultId: string,
+    sendTxCallback: SendTxCallback,
+  ): Promise<TransactionReceipt>;
 }
