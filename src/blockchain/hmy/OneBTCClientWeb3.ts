@@ -513,11 +513,22 @@ export class OneBTCClientWeb3 implements IOneBTCClient {
     return await this.stakingContract.methods.lockedVaults(addressHex).call();
   };
 
-  updateVaultAccClaimableRewards = async (vaultId: string) => {
+  updateVaultAccClaimableRewards = async (
+    vaultId: string,
+    sendTxCallback: SendTxCallback,
+  ) => {
     const addressHex = this._prepareAddress(vaultId);
+    const senderAddress = await this.getSenderAddress();
+
+    const gasPrice = await this.getGasPrice();
     return await this.stakingContract.methods
       .updateVaultAccClaimableRewards(addressHex)
-      .call();
+      .send({
+        from: senderAddress,
+        gasLimit: this.options.gasLimit,
+        gasPrice,
+      })
+      .on('transactionHash', sendTxCallback);
   };
 
   getRedeemDetails = async (txHash: string): Promise<RedeemDetails | void> => {
