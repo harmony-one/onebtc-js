@@ -22,6 +22,16 @@ export enum Network {
   MAINNET = 'mainnet',
 }
 
+export enum HISTORY_INTERVAL {
+  DAY = 'day',
+  WEEK = 'week',
+  MONTH = 'month',
+}
+
+export interface LoadHistoryParams {
+  interval: HISTORY_INTERVAL;
+}
+
 export interface IDashboardApiParams {
   dashboardUrl: string;
   btcNodeUrl: string;
@@ -222,7 +232,7 @@ export class DashboardApi {
 
   private _loadHistory = async <T>(
     entityHistory: ENTITY_HISTORY_TYPE,
-    params?: unknown,
+    params?: LoadHistoryParams,
   ): Promise<IListContainer<T>> => {
     const res = await axios.get(
       `${this.dashboardUrl}/history/${entityHistory}`,
@@ -231,17 +241,24 @@ export class DashboardApi {
     return res.data;
   };
 
-  public loadHistoryVault = async () => {
-    return this._loadHistory<IHistoryVaultItem>(ENTITY_HISTORY_TYPE.VAULTS, {
-      step: 'd',
-    });
+  public loadHistoryVault = async (params?: LoadHistoryParams) => {
+    return this._loadHistory<IHistoryVaultItem>(
+      ENTITY_HISTORY_TYPE.VAULTS,
+      params,
+    );
   };
 
-  public loadHistoryRedeem = async () => {
-    return this._loadHistory<IHistoryRedeemItem>(ENTITY_HISTORY_TYPE.REDEEMS);
+  public loadHistoryRedeem = async (params?: LoadHistoryParams) => {
+    return this._loadHistory<IHistoryRedeemItem>(
+      ENTITY_HISTORY_TYPE.REDEEMS,
+      params,
+    );
   };
 
-  public loadHistoryIssue = async () => {
-    return this._loadHistory<IHistoryIssueItem>(ENTITY_HISTORY_TYPE.ISSUED);
+  public loadHistoryIssue = async (params?: LoadHistoryParams) => {
+    return this._loadHistory<IHistoryIssueItem>(
+      ENTITY_HISTORY_TYPE.ISSUED,
+      params,
+    );
   };
 }

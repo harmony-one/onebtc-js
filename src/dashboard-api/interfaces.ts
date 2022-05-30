@@ -137,12 +137,16 @@ export interface IHistoryVaultItem extends IHistoryItem {
 
 export interface IHistoryRedeemItem extends IHistoryItem {
   amountPerDay: number;
+  amountPerWeek: number;
+  amountPerMonth: number;
   totalIssued: number;
   total: number;
 }
 
 export interface IHistoryIssueItem extends IHistoryItem {
   amountPerDay: number;
+  amountPerWeek: number;
+  amountPerMonth: number;
   totalIssued: number;
   total: number;
 }
